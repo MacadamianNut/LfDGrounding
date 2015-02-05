@@ -1,0 +1,910 @@
+//derived from http://stackoverflow.com/questions/5923767/simple-state-machine-example-in-c
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+using Microsoft.Kinect;
+
+/*Symbolic constants for robot within allMoves array (array that will be declared later
+that keeps track of when a robot should make a mistake during the dance)*/
+const type DONTMAKEERROR = 0;
+const type MAKEERROR = 1;
+
+/*Symbolic constants for which error state [many mistakes] -> [fewer mistakes] -> [very very few mistakes]*/
+const type STAGE0PREINTERACTION = 0;
+const type STAGE1MANYMISTAKES = 1;
+const type STAGE2FEWMISTAKES = 2;
+const type STAGE3NONEISHMISTAKES = 3;
+
+namespace SkeletonDataServer
+{
+	class SavingKinectData
+	{
+		/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		VARIABLES 
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
+
+		//change this variable for each subject
+		public static string subjectNum = "1";
+
+		//to be used in the output file transcribing the events during the interaction
+		public string timeStamp = "";
+
+		/**********
+		* Names: 	getTimeStamp(DateTime value)
+		* Purpose:	Formats the date into something more human-readable
+		 **********/
+		public static String getTimeStamp(DateTime value)
+        {
+            return value.ToString("MM-dd-yyyy__HH-mm-ss");
+        }
+
+        //output file for a specific subject
+        public string filename = @"C:\Users\rhclab\Desktop\Subject_" + subjectNum +  "_Time_" + getTimeStamp(DateTime.Now) + ".txt";
+
+        //Kinect for Windows V2 Sensor
+        public KinectSensor sensor;
+
+        //frame readers for processing synchronized streams
+        private BodyFrameReader bodyReader;
+
+        //array updated with new frame data when it becomes availalbe
+        private Body[] bodyData = null;
+
+        //incremented each time body frame has arrived
+        private int frameNumber;
+
+        //create a lock so that multiple events don't try to do the same thing at once (send data to Darwin server)
+        private Object thisLock = new Object();
+        
+        //this variable is modified in the lock (set to true and then false after two-way communication), when set to true event handlers do not process body frame data
+        private bool processing = false;
+
+        //the message that is sent to the Darwin server (a string with two words separated by a space)
+        private string dataToSend = "";
+
+        bool robotMakeError = false;
+
+        //response from the Darwin server 
+        private string response = "";
+
+        //set to true when the Kinect client successfully connects to the Darwin server
+        private bool connected = false;
+
+        //set to true when this program has data to send to the Kinect
+        private bool readyToWrite = false;
+
+        private bool dataBeingPrepped = false;
+
+        //25 tracked joint names in the order of the JointType enum, comma separated
+        private string jointNames = null;
+
+        //array holding the joint information (joint names and joint data)
+        //25 for the number of joints
+        //9 for the jointName and then the 8 data points
+        private string[,] jointNamesAndData = new string[25,9];
+
+        static int delay = 1;
+
+        //variables needed for FPS calculation
+        private System.Diagnostics.Stopwatch frameTime = null;
+        private DateTime nextStatusUpdate;
+        private DateTime nextFrameCaptureUpdate = DateTime.Now + TimeSpan.FromSeconds(delay);
+        private uint framesSinceUpdate;
+
+        //set to DateTime.Now when first frame arrives, used to calculate how much time has elapsed since the
+        //beginning of the KStudio recording and find the timestamp with respect to the KStudio filename
+        private DateTime startTime;
+
+        private long bodyStartTime = 0;
+
+        //this variable checks to see when the interaction begins (with person holding both arms out to the side)
+        bool started = false;
+
+        //this variable checks for the last hokeypokey done in the third iteration to end the interaction
+        bool ended = false;
+
+        //keep track of previous position, especially useful for determining if a hand or foot is shaking
+        string previousPosition = "default";
+
+        string incorrectAction;
+
+        //variables needed to determine if there is any hand or foot shaking
+        double footLastX = 0.0;
+        double handLastX = 0.0;
+
+        //random number needed for the three test conditions
+        Random random = new Random();
+        int stateCount = 0, numMistakes, randomNum;
+
+        string[] incorrectMoveArray = {"leftArm", "rightArm", "leftLeg", "rightLeg", "default"};
+
+        /**********
+        * Name: 		determineIncorrectMove
+        * Purpose:		To randomly pick the wrong action to perform when the robot makes a mistake
+        				In order to make sure it's perceived as a mistake, don't do a move on the same
+        				limb (ex. if a robot is actually supposed to put right arm in, have the mistake
+        				be an action done by any other limb)
+        * Parameters: 	A string that is either leftArm/rightArm/leftLeg/rightLeg/default
+         **********/
+        public string determineIncorrectMove(string temp)
+        {
+            bool tempFlag = true;
+            int choice = -1;
+            while(tempFlag)
+            {
+                choice = random.Next(0,5);
+                if(incorrectMoveArray[choice] != temp)
+                {
+                    tempFlag = false;
+                }
+            }
+
+            return incorrectMoveArray[choice]; //if there is an out of bounds error then check here
+        }
+
+        //variable to keep track of current stage
+        string stage = "";
+
+        //variable to keep track of current place in a stage
+        int counter = 0;
+
+        //array for the moves (20 in total)
+        int[] allMoves = new int[20] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+        //array for all of the shakes (leftArmShake, rightArmShake, leftArmShake) to let you know when
+        int[] shakeArray = new int[4] { 0, 0, 0, 0 };
+
+        bool allShakesDone = false;
+
+        //variable that keeps track of when to change state (and therefore when to retrieve a new random number for the stage)
+        bool changingState = false;
+
+		//all of the [x-limb]_OUTs are the same as default
+		public enum DanceState 
+		{ 
+			PRE_INTERACTION_0, 
+			PURGATORY_1, 
+			LEFT_HAND_IN_2, 
+			LEFT_HAND_OUT_3, 
+			LEFT_HAND_IN_4, 
+			LEFT_HAND_SHAKE_5, 
+			HOKEY_POKEY_6, 
+			RIGHT_HAND_IN_7, 
+			RIGHT_HAND_OUT_8, 
+			RIGHT_HAND_IN_9, 
+			RIGHT_HAND_SHAKE_10, 
+			HOKEY_POKEY_11. 
+			LEFT_LEG_IN_12, 
+			LEFT_LEG_OUT_13, 
+			LEFT_LEG_IN_14, 
+			LEFT_LEG_SHAKE_15, 
+			HOKEY_POKEY_16, 
+			RIGHT_LEG_IN_17, 
+			RIGHT_LEG_OUT_18, 
+			RIGHT_LEG_IN_19, 
+			RIGHT_LEG_SHAKE_20, 
+			HOKEY_POKEY_21, 
+			DEFAULT_STATE_22,
+			HOKEY_POKEY_NON_SEQUENTIAL_23
+		}
+
+		public enum DanceMove 
+		{ 
+			BHO //both hands out to start the interaction
+			LHI, 
+			LHS, 
+			RHI, 
+			RHS, 
+			LLI, 
+			LLS, 
+			RLI, 
+			RLS,
+			HP,
+			DEFAULT, 
+			INVALID,
+			OTHER 
+		}
+
+		/* Class Names: DanceState and StateTransition
+		 * Purpose:		DanceState - represents the all of the different states that can occur during the interaction
+		 				StateTransition - represents the transitions between states when various actions happen
+		*/
+		class Dance
+		{
+			class StateTransition
+			{
+				readonly DanceState CurrentState;
+				readonly DanceMove DanceMove;
+
+				public StateTransition(DanceState currentState, DanceMove danceMove)
+				{
+					CurrentState = currentState;
+					DanceMove = danceMove;
+				}
+
+				public override int GetHashCode() //something about avoiding dictionary collisions and optimizing: http://stackoverflow.com/questions/5923767/simple-state-machine-example-in-c
+				{
+					return 17 + 31 * CurrentState.GetHashCode() + 31 * DanceMove.GetHashCode();
+				}
+
+				public override bool Equals(object obj)
+				{
+					StateTransition other = obj as StateTransition;
+					return other != null && this.CurrentState == other.CurrentState && this.DanceMove == other.DanceMove;
+				}
+			}
+
+			Dictionary<StateTransition, DanceState> transitions;
+			public DanceState CurrentState {get; private set; }
+
+			public Dance()
+			{
+				//i need purgatory to serve an an auto-forward state (where if it's reached, then it immediately jumps to a different state)
+				CurrentState = DanceState.PRE_INTERACTION_0;
+				transitions = new Dictionary<StateTransition, DanceState>
+				{
+					{ new StateTransition(DanceState.PRE_INTERACTION_0, DanceMove.BHO), DanceState.DEFAULT_STATE_22 },
+					{ new StateTransition(DanceState.PURGATORY_1, DanceMove.LHI), DanceState.LEFT_HAND_IN_2 },
+					{ new StateTransition(DanceState.PURGATORY_1, DanceMove.RHI), DanceState.RIGHT_HAND_IN_7 },
+					{ new StateTransition(DanceState.PURGATORY_1, DanceMove.LLI), DanceState.LEFT_LEG_IN_12 },
+					{ new StateTransition(DanceState.PURGATORY_1, DanceMove.RLI), DanceState.RIGHT_LEG_IN_17 },
+					{ new StateTransition(DanceState.PURGATORY_1, DanceMove.DEFAULT), DanceState.DEFAULT_STATE_22 },
+					{ new StateTransition(DanceState.PURGATORY_1, DanceMove.HP, DanceState.HOKEY_POKEY_NON_SEQUENTIAL_23 },
+					{ new StateTransition(DanceState.LEFT_HAND_IN_2, DanceMove.LHI), DanceState.LEFT_HAND_IN_2 },
+					{ new StateTransition(DanceState.LEFT_HAND_IN_2, DanceMove.DEFAULT), DanceState.LEFT_HAND_OUT_3 },
+					{ new StateTransition(DanceState.LEFT_HAND_OUT_3, DanceMove.DEFAULT), DanceState.LEFT_HAND_OUT_3 },
+					{ new StateTransition(DanceState.LEFT_HAND_OUT_3, DanceMove.LHI), DanceState.LEFT_HAND_IN_4 },
+					{ new StateTransition(DanceState.LEFT_HAND_IN_4, DanceMove.LHI), DanceState.LEFT_HAND_IN_4 },
+					{ new StateTransition(DanceState.LEFT_HAND_IN_4, DanceMove.DEFAULT), DanceState.LEFT_HAND_OUT_3 },
+					{ new StateTransition(DanceState.LEFT_HAND_IN_4, DanceMove.LHS), DanceState.LEFT_HAND_SHAKE_5 },
+					{ new StateTransition(DanceState.LEFT_HAND_SHAKE_5, DanceMove.LHS), DanceState.LEFT_HAND_SHAKE_5 },
+					{ new StateTransition(DanceState.LEFT_HAND_SHAKE_5, DanceMove.LHI), DanceState.LEFT_HAND_IN_4 },
+					{ new StateTransition(DanceState.LEFT_HAND_SHAKE_5, DanceMove.DEFAULT), DanceState.LEFT_HAND_SHAKE_5 },
+					{ new StateTransition(DanceState.LEFT_HAND_SHAKE_5, DanceMove.HP), DanceState.HOKEY_POKEY_6 },
+					{ new StateTransition(DanceState.RIGHT_HAND_IN_7, DanceMove.RHI), DanceState.RIGHT_HAND_IN_7 },
+					{ new StateTransition(DanceState.RIGHT_HAND_IN_7, DanceMove.DEFAULT), DanceState.RIGHT_HAND_OUT_8 },
+					{ new StateTransition(DanceState.RIGHT_HAND_OUT_8, DanceMove.DEFAULT), DanceState.RIGHT_HAND_OUT_8 },
+					{ new StateTransition(DanceState.RIGHT_HAND_OUT_8, DanceMove.RHI), DanceState.RIGHT_HAND_IN_9 },
+					{ new StateTransition(DanceState.RIGHT_HAND_IN_9, DanceMove.RHI), DanceState.RIGHT_HAND_IN_9 },
+					{ new StateTransition(DanceState.RIGHT_HAND_IN_9, DanceMove.DEFAULT), DanceState.RIGHT_HAND_OUT_8 },
+					{ new StateTransition(DanceState.RIGHT_HAND_IN_9, DanceMove.RHS), DanceState.RIGHT_HAND_SHAKE_10 },
+					{ new StateTransition(DanceState.RIGHT_HAND_SHAKE_10, DanceMove.RHS), DanceState.RIGHT_HAND_SHAKE_10 },
+					{ new StateTransition(DanceState.RIGHT_HAND_SHAKE_10, DanceMove.RHI), DanceState.RIGHT_HAND_IN_9 },
+					{ new StateTransition(DanceState.RIGHT_HAND_SHAKE_10, DanceMove.DEFAULT), DanceState.RIGHT_HAND_SHAKE_10 },
+					{ new StateTransition(DanceState.RIGHT_HAND_SHAKE_10, DanceMove.HP), DanceState.HOKEY_POKEY_11 },
+					{ new StateTransition(DanceState.LEFT_LEG_IN_12, DanceMove.LLI), DanceState.LEFT_LEG_IN_12 },
+					{ new StateTransition(DanceState.LEFT_LEG_IN_12, DanceMove.DEFAULT), DanceState.LEFT_LEG_OUT_13 },
+					{ new StateTransition(DanceState.LEFT_LEG_OUT_13, DanceMove.DEFAULT), DanceState.LEFT_LEG_OUT_13 },
+					{ new StateTransition(DanceState.LEFT_LEG_OUT_13, DanceMove.LLI), DanceState.LEFT_LEG_IN_14 },
+					{ new StateTransition(DanceState.LEFT_LEG_IN_14, DanceMove.LLI), DanceState.LEFT_LEG_IN_14 },
+					{ new StateTransition(DanceState.LEFT_LEG_IN_14, DanceMove.DEFAULT), DanceState.LEFT_LEG_OUT_13 },
+					{ new StateTransition(DanceState.LEFT_LEG_IN_14, DanceMove.LLS), DanceState.LEFT_LEG_SHAKE_15 },
+					{ new StateTransition(DanceState.LEFT_LEG_SHAKE_15, DanceMove.LLS), DanceState.LEFT_LEG_SHAKE_15 },
+					{ new StateTransition(DanceState.LEFT_LEG_SHAKE_15, DanceMove.LLI), DanceState.LEFT_LEG_IN_14 },
+					{ new StateTransition(DanceState.LEFT_LEG_SHAKE_15, DanceMove.DEFAULT), DanceState.LEFT_LEG_SHAKE_15 },
+					{ new StateTransition(DanceState.LEFT_LEG_SHAKE_15, DanceMove.HP), DanceState.HOKEY_POKEY_16 },
+					{ new StateTransition(DanceState.RIGHT_LEG_IN_17, DanceMove.RLI), DanceState.RIGHT_LEG_IN_17 },
+					{ new StateTransition(DanceState.RIGHT_LEG_IN_17, DanceMove.DEFAULT), DanceState.RIGHT_LEG_OUT_18 },
+					{ new StateTransition(DanceState.RIGHT_LEG_OUT_18, DanceMove.DEFAULT), DanceState.RIGHT_LEG_OUT_18 },
+					{ new StateTransition(DanceState.RIGHT_LEG_OUT_18, DanceMove.RLI), DanceState.RIGHT_LEG_IN_17 },
+					{ new StateTransition(DanceState.RIGHT_LEG_IN_19, DanceMove.RLI), DanceState.RIGHT_LEG_IN_19 },
+					{ new StateTransition(DanceState.RIGHT_LEG_IN_19, DanceMove.DEFAULT), DanceState.RIGHT_LEG_OUT_18 },
+					{ new StateTransition(DanceState.RIGHT_LEG_IN_19, DanceMove.RLS), DanceState.RIGHT_LEG_SHAKE_20 },
+					{ new StateTransition(DanceState.RIGHT_LEG_SHAKE_20, DanceMove.RLS), DanceState.RIGHT_LEG_SHAKE_20 },
+					{ new StateTransition(DanceState.RIGHT_LEG_SHAKE_20, DanceMove.RLI), DanceState.RIGHT_LEG_IN_19 },
+					{ new StateTransition(DanceState.RIGHT_LEG_SHAKE_20, DanceMove.DEFAULT), DanceState.RIGHT_LEG_SHAKE_20 },
+					{ new StateTransition(DanceState.RIGHT_LEG_SHAKE_20, DanceMove.HP), DanceState.HOKEY_POKEY_21 },
+				};
+			}
+
+			public DanceState GetNext(DanceMove danceMove)
+			{
+				StateTransition transition = new StateTransition(CurrentState, danceMove);
+				DanceState nextState;
+				if(!transitions.TryGetValue(transition, out nextState))
+				{
+					//looks like purgatory works best as serving as the state right after the person begins the interaction
+					//by holding both hands out, and then waiting for the next dance
+					//otherwise it's not accessed again
+
+					//now depending on the danceMove send it to a different tree
+					if(danceMove == LHI || danceMove == LHS)
+						nextState = LEFT_HAND_IN_2; 	//send it to the beginning of the left hand tree
+					else if(danceMove == RHI || danceMove == RHS)
+						nextState = RIGHT_HAND_IN_7; 	//send it to the beginning of the right hand tree
+					else if(danceMove == LLI || danceMove == LLS)
+						nextState = LEFT_LEG_IN_12;  	//send it to the beginning of the left leg tree
+					else if(danceMove == RLI || danceMove == RLS)
+						nextState = RIGHT_LEG_IN_17;	//send it to the beginning of the right leg tree
+					else if(danceMove == DEFAULT)
+						nextState = DEFAULT_STATE_22;
+					else if(danceMove == HP)
+						nextState = HOKEY_POKEY_NON_SEQUENTIAL_23;
+					else 								//for an invalid move								
+						nextState = PURGATORY_1;
+				}
+				return nextState;
+			}
+
+			public DanceState MoveNext(DanceMove danceMove)
+			{
+				CurrentState = GetNext(danceMove);
+				return CurrentState;
+			}
+		}
+
+		/*	Function Name:	SavingKinectData
+		* 	Parameters:		none
+		* 	Purpose: 		Class constructor - initializes kinect and buffers, initializes connection to Darwin, and
+		*					subscribes to Kinect body data event handler
+		*/
+		public SavingKinectData()
+		{
+			//intialize data for fps calculation
+            this.frameTime = new System.Diagnostics.Stopwatch();
+            this.nextStatusUpdate = DateTime.MinValue;
+            this.framesSinceUpdate = 0;
+
+            //map enum names of joints to openni joint names in enum order
+            this.jointNames = mapJointNamesToOpenNI();
+
+            //first frame read has frameNumber = 0 
+            this.frameNumber = 0;
+
+            //initialize kinect and data buffers
+            this.sensor = KinectSensor.GetDefault();
+            if (this.sensor != null)
+            {
+                //open sensor
+                this.sensor.Open();
+
+                //determine dimensions needed for each of the arrays of data using FrameDescription/ BodyCount
+                this.bodyData = new Body[this.sensor.BodyFrameSource.BodyCount];
+
+                this.bodyReader = this.sensor.BodyFrameSource.OpenReader();
+
+                //subscribe to frame arrival event, event raised when a new body frame arrives
+                this.bodyReader.FrameArrived += bodyReader_FrameArrived;
+                
+                //Establishing connection
+            	Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            	//EndPoint sendEndPoint;
+
+      			try{
+                    clientSocket.Connect("10.11.132.21", 3333);
+         			Console.WriteLine("Connected to Darwin");
+            		connected = true;
+      			} catch (SocketException e)
+      			{
+         			Console.WriteLine("Unable to connect to Darwin.");
+         			Console.WriteLine(e.ToString());
+         			return;
+      			}
+
+      			//this variable is just used once so that the program can state when the main loop of the program starts after a successful connection
+      			bool flag = true;
+      			
+      			try{
+      			    //loop for interaction with the server
+                    while(connected)
+                    {
+                        if(flag)
+                        {
+                            //this stuff is shown once
+                            Console.WriteLine("Entered while loop for interaction with the server");
+                            flag = false;
+                        }
+
+                        //the below location may not be correct
+                        //but anyway, set up the Dance state machine
+                		Dance theHokeyPokeyDance = new Dance();
+
+                		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
+                        //event handlers check the "processing" variable before attempting to process code
+                        //when a single event handler is clear to process data, it sets the variable to false so that other handlers do not process the code
+                        //the variable is not set to false until after the two-way communication occurs
+                        lock(thisLock)
+                        {
+                            //Console.WriteLine("Inside locked section of code");
+                            if (!processing && readyToWrite) //need to send stuff through socket if nothing else is being processed 
+                            {
+                                processing = true; //so other event handlers after this will read this value and not do the body processing
+                                if (!dataToSend.Equals("nothing here alright"))
+                                {
+                                    //Console.WriteLine("Processing has started");
+                                    byte[] outStream = System.Text.Encoding.ASCII.GetBytes(dataToSend);
+                                    clientSocket.Send(Encoding.ASCII.GetBytes(dataToSend));
+                                    Console.WriteLine("Sent data: " + dataToSend);
+
+                                    byte[] bytes = new byte[256];
+                                    int i = clientSocket.Receive(bytes); //Cory note: may need to change this code to actually make sure we recieved a message
+                                    response = Encoding.UTF8.GetString(bytes);
+                                    Console.WriteLine("Received data: " + response);
+
+                                    //REMOVE THE FOLLOWING WHEN IN ACTUAL EXPERIMENT
+                                    Console.Write("Moves array: [");
+                                    //debugging stuff, print out mistake array and counter
+                                    for (int y = 0; y < 19; y++)
+                                    {
+                                        Console.Write(allMoves[y].ToString() + ",");
+                                    }
+                                    Console.WriteLine(allMoves[19].ToString() + "]");
+
+                                    Console.WriteLine("Counter: " + counter.ToString());
+                                    //REMOVE THE ABOVE WHEN IN ACTUAL EXPERIMENT
+                                }
+                        
+                                processing = false; //now future event handlers can start processing again
+                                readyToWrite = false;
+                                dataBeingPrepped = false;
+                                //Console.WriteLine("Processing has ended");
+                            }
+                            //Console.WriteLine("Exiting locked section of code");
+                        }
+      			   }
+      			   connected = false;
+      			   Console.WriteLine("Disconnected from Darwin.");
+      		    } catch(Exception e)
+      		    {
+      			   Console.WriteLine(e.Message);
+      		    }
+      		}
+		}
+
+		/* Function Name:   bodyReader_FrameArrived
+         * Parameters:      sender-object raising the event, e-event arguments
+         * Returns:         void
+         * Purpose:         Event handler for arrival of frames from body stream.
+         */
+        void bodyReader_FrameArrived(object sender, BodyFrameArrivedEventArgs e)
+        {
+            //fps calculation
+            //calculateFPS();
+
+            //when first frame arrives, record start time
+            if (this.frameNumber == 0)
+            {
+                this.startTime = DateTime.Now;
+            }
+
+            /*****body frame processing*****/
+            using (BodyFrame frame = e.FrameReference.AcquireFrame())
+            {
+                if (frame != null)
+                {
+                    if (this.bodyStartTime == 0)
+                    {
+                        //bodyStartTime takes into account time elapsed during initial null frames
+                        this.bodyStartTime = frame.RelativeTime.Ticks - (DateTime.Now - this.startTime).Ticks;
+                    }
+
+                    long stamp = getTicksSinceEpoch(frame.RelativeTime.Ticks, this.bodyStartTime);
+
+                    long secs = stamp / 10000000;     //10 million ticks / second
+                    long nsecs = (stamp % 10000000) * 100;    //100 ns / tick
+
+                    frame.GetAndRefreshBodyData(this.bodyData);
+                    foreach (Body body in this.bodyData)
+                    {
+                        // if no body is tracked for a frame, no data is written to file for that frame
+                        //if (body.IsTracked)
+                        //if (body.IsTracked && DateTime.Now >= this.nextFrameCaptureUpdate)
+                        if (body.IsTracked)
+                        {
+                            //bodyCurrentlyTracked = true; //trying to limit how fast data is processed
+                            if (connected && !dataBeingPrepped)
+                            {
+                                dataBeingPrepped = true;
+
+                                //each line of csv file contains the frame number, timestamp, tracking id, and ordered list of joint names
+                                string bodyLine = this.frameNumber + "," + secs + "," + nsecs + "," + (Int32)body.TrackingId;
+                                string bodyLine2 = this.jointNames;
+                                string confidence = null;
+
+                                string[] temp = bodyLine2.Split(',');
+                                for (int i = 0; i < temp.Length; i++)
+                                {
+                                    jointNamesAndData[i, 0] = temp[i];
+                                }
+
+                                int numJoints = 25;
+
+                                //iterate through all joints in enum order
+                                for (int i = 0; i < numJoints; ++i)
+                                {
+                                    Joint joint = body.Joints[(JointType)i];
+                                    JointOrientation jOrient = body.JointOrientations[(JointType)i];
+
+                                    //confidence = 0.0 for not tracked, 0.5 for inferred, 1.0 for tracked
+                                    confidence = (float)((int)joint.TrackingState / 2.0) + "";
+
+                                    jointNamesAndData[i, 1] = confidence;
+
+                                    //position is 3 dimensional position with the depth/IR camera as origin (Camera Space Points)
+                                    jointNamesAndData[i, 2] = Convert.ToString(joint.Position.X);
+                                    jointNamesAndData[i, 3] = Convert.ToString(joint.Position.Y);
+                                    jointNamesAndData[i, 4] = Convert.ToString(joint.Position.Z);
+
+                                    //orienation is quaternion relative to parent joint
+                                    jointNamesAndData[i, 5] = Convert.ToString(jOrient.Orientation.W);
+                                    jointNamesAndData[i, 6] = Convert.ToString(jOrient.Orientation.X);
+                                    jointNamesAndData[i, 7] = Convert.ToString(jOrient.Orientation.Y);
+                                    jointNamesAndData[i, 8] = Convert.ToString(jOrient.Orientation.Z);
+                                }
+
+                                //data parsing before writing to another file
+                                string[] header = bodyLine.Split(',');
+
+                                //sanity check
+                                //header should be 4 fields in length (frame, seconds, nano seconds, tracking id)
+                                if (header.Length != 4)
+                                    Console.WriteLine("Error: Header was parsed incorrectly");
+
+                                //joints should be 25 fields in length
+                                if (jointNamesAndData.GetLength(0) != 25)
+                                    Console.WriteLine("Error: Joint names were parsed incorrectly");
+
+                                //second dimension should be 9 (jointName + 8 data points) fields in length
+                                if (jointNamesAndData.GetLength(1) != 9)
+                                    Console.WriteLine("Error: Joint data was parsed incorrectly");
+
+                                //another sanity check
+                                if (jointNamesAndData[4, 0] != "ShoulderLeft" || jointNamesAndData[7, 0] != "HandLeft" || jointNamesAndData[8, 0] != "ShoulderRight" || jointNamesAndData[11, 0] != "HandRight" || jointNamesAndData[15, 0] != "FootLeft" || jointNamesAndData[19, 0] != "FootRight")
+                                    Console.WriteLine("ERROR. Calculating wrong joints");
+
+                                //we have all of the joint data now
+                                //so it's time to determine what action the participant performed
+                                if (changingState)
+                                {
+                                }
+                                else if (bothHandsOutToSide() && !started && !ended)
+                                {
+                                	previousPosition = ""
+                                	started = true;
+                                	Console.WriteLine("Participant stuck out both arms to signify the beginning of interaction");
+                                	theHokeyPokeyDance.MoveNext(DanceMove.BHO);
+                                	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                                }
+                                else if (bothHandsIn() && started)
+                                {
+                                	Console.WriteLine("Participant stuck both hands forward. Invalid move");
+                                	theHokeyPokeyDance.MoveNext(DanceMove.BHO);
+                                	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                                	previousPosition = "bothHandsIn";
+                                }
+                                else if (doingHokeyPokey() && started)
+                                {
+                                	Console.WriteLine("Participant did the hokey pokey");
+                                	theHokeyPokeyDance.MoveNext(DanceMove.HP);
+                                	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                                	previousPosition = "hokeyPokey";
+                                }
+                                else if (leftLegIn() && started)
+                                {
+                                	if(previousPosition.Equals("leftLegIn") || previousPosition.Equals("leftLegShake"))
+                                	{
+                                		if(leftLegShaking(footLastX))
+                                		{
+                                			footLastX = Convert.ToDouble(jointNamesAndData[15,2]);
+                                			previousPosition = "leftLegShake";
+
+                                			Console.WriteLine("Participant shook their left leg");
+                                			theHokeyPokeyDance.MoveNext(DanceMove.LLS);
+                                			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                                		}
+                                	}
+                                	else
+                                	{
+                                		footLastX = Convert.ToDouble(jointNamesAndData[15,2]);
+                                		previousPosition = "leftLegIn";
+
+                                		Console.WriteLine("Participant put their left leg in");
+                                		theHokeyPokeyDance.MoveNext(DanceMove.LLI);
+                                		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                                	}
+                                }
+                                else if (rightLegIn() && started)
+                                {
+                                	if(previousPosition.Equals("rightLegIn") || previousPosition.Equals("rightLegShake"))
+                                	{
+                                		if(rightLegShaking(footLastX))
+                                		{
+                                			footLastX = Convert.ToDouble(jointNamesAndData[19,2]);
+                                			previousPosition = "rightLegShake";
+
+                                			Console.WriteLine("Participant shook their right leg");
+                                			theHokeyPokeyDance.MoveNext(DanceMove.RLS);
+                                			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                                		}
+                                	}
+                                	else
+                                	{
+                                		footLastX = Convert.ToDouble(jointNamesAndData[19,2]);
+                                		previousPosition = "rightLegIn";
+
+                                		Console.WriteLine("Participant put their right leg in");
+                                		theHokeyPokeyDance.MoveNext(DanceMove.RLI);
+                                		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                                	}
+                                }
+                                else if (leftArmIn() && started)
+                                {
+                                	if(previousPosition.Equals("leftArmIn") || previousPosition.Equals("leftArmShake"))
+                                	{
+                                		if(leftArmShaking(handLastX))
+                                		{
+                                			handLastX = Convert.ToDouble(jointNamesAndData[7,2]);
+                                			previousPosition = "leftArmShake";
+
+                                			Console.WriteLine("Participant shook their left arm");
+                                			theHokeyPokeyDance.MoveNext(DanceMove.LHI);
+                                			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                                		}
+                                	}
+                                	else
+                                	{
+                                		footLastX = Convert.ToDouble(jointNamesAndData[7,2]);
+                                		previousPosition = "leftLegIn";
+
+                                		Console.WriteLine("Participant put their left leg in");
+                                		theHokeyPokeyDance.MoveNext(DanceMove.LLI);
+                                		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                                	}
+                                }
+                                else if (rightArmIn() && started)
+                                {
+                                }
+                                else if (inDefault())
+                                {
+                                }
+                                else
+                                {
+                                }
+                            } //end of "if(connected && !dataBeingPrepped" loop
+                        } //end of "if (body.IsTracked)" loop
+                    } //end of foreach frame loop
+                }
+                //increment frame number
+            	++this.frameNumber;
+        	}
+        }
+
+		/* Function Name:   mapJointNamesToOpenNI
+         * Parameters:      none
+         * Returns:         string of comma separated joints
+         * Purpose:         Convert the Enum names of Kinect SDK to the names defined by OpenNI skeleton tracker.  Also
+         *                  renames joints not defined by the OpenNI tracker to have similar form.
+         */
+        private string mapJointNamesToOpenNI()
+        {
+            string namesString = null;
+            string[] enumNames = Enum.GetNames(typeof(JointType));
+            for (int i = 0; i < enumNames.Length; i++)
+            {
+                namesString += enumNames[i] + ","; 
+            }
+            namesString = namesString.TrimEnd(',');
+            return namesString;
+        }
+
+        /* Function Name:   getTicksSinceEpoch
+         * Parameters:      currentFrameTime - RelativeTime property of the current frame; firstFrameTime - RelativeTime property 
+         *                  of the first frame received (recorded separately for each type of stream)
+         * Returns:         long, number of ticks since the epoch
+         * Purpose:         Calculate the number of ticks (1 tick = 100 ns) since the beginning of Unix time (January 1, 1970, 
+         *                  00:00:00.000).  This calculation will vary depending on if a KStudio recording provides the data, 
+         *                  or if it is a live data stream.
+         */
+        private long getTicksSinceEpoch(long currentFrameTime, long firstFrameTime)
+        {
+            long timeSinceStart = currentFrameTime - firstFrameTime;
+            long ticksSinceEpoch = this.startTime.Ticks + timeSinceStart - (new DateTime(1970, 1, 1, 0, 0, 0)).Ticks;
+            return ticksSinceEpoch;
+        }
+
+        /* Function Name:   calculateFPS
+         * Parameters:      none
+         * Returns:         void
+         * Purpose:         Calculates FPS of multisource frames received and writes updated data to the console each second.
+         */
+        private void calculateFPS()
+        {
+            this.framesSinceUpdate++;
+            if (DateTime.Now >= this.nextStatusUpdate)
+            {
+                if (this.frameTime.IsRunning)
+                {
+                    this.frameTime.Stop();
+                    double fps = this.framesSinceUpdate / this.frameTime.Elapsed.TotalSeconds;
+                    //Console.WriteLine("FPS: " + fps); //Cory's note, I need to uncomment this later
+                    this.nextStatusUpdate = DateTime.Now + TimeSpan.FromSeconds(1);
+                    this.frameTime.Reset();
+                }
+                if (!this.frameTime.IsRunning)
+                {
+                    this.framesSinceUpdate = 0;
+                    this.frameTime.Start();
+                }
+            }
+        }
+
+        private bool leftArmIn()
+        {
+        	//do the same kind of check for their left hand
+            double zRightShoulderLeftHand = (Convert.ToDouble(jointNamesAndData[8,4])) - (Convert.ToDouble(jointNamesAndData[7,4]));
+            
+            if(zRightShoulderLeftHand > 0.4)
+                return true;
+            else
+            	return false;
+        }
+
+        private bool leftArmShaking(double temp)
+        {
+        	double xLeftHand = Convert.ToDouble(jointNamesAndData[7,2]);
+        	
+        	if((xLeftHand - temp) > 0.1 || (xLeftHand - temp) < -0.1)
+        		return true;
+        	else
+        		return false;
+        }
+        
+        private bool rightArmIn()
+        {
+        	//check to see if the person is holding out their right hand
+            //need to see the difference in z dimension of right hand and left shoulder
+            //z is the 5th value
+            double zLeftShoulderRightHand = (Convert.ToDouble(jointNamesAndData[4,4])) - (Convert.ToDouble(jointNamesAndData[11,4]));
+            
+           	if(zLeftShoulderRightHand > 0.4)
+                return true;
+            else
+            	return false;
+        }
+        
+        private bool rightArmShaking(double temp)
+        {
+        	double xRightHand = Convert.ToDouble(jointNamesAndData[11,2]);
+        	
+        	if((xRightHand - temp) > 0.1 || (xRightHand - temp) < -0.1)
+        		return true;
+        	else
+        		return false; 
+        }
+        
+        private bool bothHandsIn()
+        {
+        	return (leftArmIn() && rightArmIn());
+        }
+
+        private bool bothHandsOutToSide()
+        {
+            //hands need to be far apart but the hands should not be higher than the shoulders
+
+            double xRightHand = Convert.ToDouble(jointNamesAndData[11,2]);
+            double xLeftHand = Convert.ToDouble(jointNamesAndData[7,2]);
+            double yRightHand = Convert.ToDouble(jointNamesAndData[11,3]);
+            double yLeftHand = Convert.ToDouble(jointNamesAndData[7,3]);
+            double yRightShoulder = Convert.ToDouble(jointNamesAndData[8,3]);
+            double yLeftShoulder = Convert.ToDouble(jointNamesAndData[4,3]);
+
+            double diffHands = xRightHand - xLeftHand;
+            double diffLShoulderLHand = yLeftHand - yLeftShoulder;
+            double diffRShoulderRHand = yRightHand - yRightShoulder;
+
+            if (diffHands > 1.5 || diffHands < -1.5)
+            {
+                if ((diffLShoulderLHand < 0.1 && diffLShoulderLHand > -0.1) && (diffRShoulderRHand < 0.1 && diffRShoulderRHand > -0.1))
+                    return true;
+                else
+                    return false;
+            }
+            else
+                return false;
+        }
+        
+        private bool leftLegIn()
+        {
+        	//check to see if the person is holding out their left foot or right foot
+            //need to see the difference in z dimension of left foot and right foot
+                                                 
+            double zRightFootLeftFoot = (Convert.ToDouble(jointNamesAndData[19,4])) - (Convert.ToDouble(jointNamesAndData[15,4]));
+            
+            if(zRightFootLeftFoot > 0.2) //if right foot is further away, then left foot is in
+            	return true;
+            else
+        		return false;
+        }
+
+        private bool leftLegShaking(double temp)
+        {
+            double xLeftFoot = Convert.ToDouble(jointNamesAndData[15,2]);
+
+            if((xLeftFoot - temp) > 0.1 || (xLeftFoot - temp) < -0.1)
+                return true;
+            else
+                return false;
+        }
+        
+        private bool rightLegIn()
+        {
+        	double zLeftFootRightFoot = (Convert.ToDouble(jointNamesAndData[15,4])) - (Convert.ToDouble(jointNamesAndData[19,4]));
+        	
+        	if(zLeftFootRightFoot > 0.2) //if the left foot is further away, then right foot is in
+           		return true;
+            else
+        		return false;
+        }
+
+        private bool rightLegShaking(double temp)
+        {
+            double xRightFoot = Convert.ToDouble(jointNamesAndData[19,2]);
+
+            if ((xRightFoot - temp) > 0.1 || (xRightFoot - temp) < -0.1)
+                return true;
+            else
+                return false;
+        }
+
+        private bool inDefault()
+        {
+            //check if person is in default position (both hands down)
+            //need to see difference in y dimension of left hand and right shoulder
+            //also need to see difference in y dimension of right hand and right shoulder
+            // y is the 4th value in the array
+                                
+            double yLeftShoulderLeftHand = (Convert.ToDouble(jointNamesAndData[4,3])) - (Convert.ToDouble(jointNamesAndData[7,3]));
+            double yRightShoulderRightHand = (Convert.ToDouble(jointNamesAndData[8,3])) - (Convert.ToDouble(jointNamesAndData[11,3]));
+            
+            if((yLeftShoulderLeftHand > 0.35) && (yRightShoulderRightHand > 0.35)) //shoulder should be higher (greater y value)  
+            {
+                if(!leftLegIn() && !rightLegIn()) //this also covers the shaking
+                    return true;
+                else
+                    return false;
+            } 
+            else
+                return false;
+        }
+        
+        private bool doingHokeyPokey()
+        {
+        	//hands above head
+        	double yLeftHandLeftShoulder = (Convert.ToDouble(jointNamesAndData[7,3])) - (Convert.ToDouble(jointNamesAndData[4,3]));
+            double yRightHandRightShoulder = (Convert.ToDouble(jointNamesAndData[11,3])) - (Convert.ToDouble(jointNamesAndData[8,3]));
+            
+            if(yLeftHandLeftShoulder > 0.3 && yRightHandRightShoulder > 0.3)
+            	return true;
+            else
+            	return false;
+        }
+    }
+
+	class ConsoleApp
+	{
+		/* Function Name:   Main
+	     * Parameters:      args-command line arguments
+	     * Returns:         void
+	     * Purpose:         Entry point to application.  Instantiates a SavingKinectData object and runs until
+	     *                  the user inputs ENTER.
+	     */
+	    static void Main(string[] args)
+	    {
+	        //instantiating SavingKinectData object sets up subscriptions to frame arrival events 
+	        SavingKinectData prog = new SavingKinectData();
+
+	        //wait for user input to end program
+	        Console.ReadLine();
+
+	        //close kinect and stop server
+	        if(prog.sensor != null) prog.sensor.Close();
+	        //prog.server.stopServer();
+	    }
+	}
+}
