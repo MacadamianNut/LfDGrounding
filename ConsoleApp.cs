@@ -9,17 +9,6 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.Kinect;
 
-/*Symbolic constants for robot within allMoves array (array that will be declared later
-that keeps track of when a robot should make a mistake during the dance)*/
-const type DONTMAKEERROR = 0;
-const type MAKEERROR = 1;
-
-/*Symbolic constants for which error state [many mistakes] -> [fewer mistakes] -> [very very few mistakes]*/
-const type STAGE0PREINTERACTION = 0;
-const type STAGE1MANYMISTAKES = 1;
-const type STAGE2FEWMISTAKES = 2;
-const type STAGE3NONEISHMISTAKES = 3;
-
 namespace SkeletonDataServer
 {
 	class SavingKinectData
@@ -45,6 +34,17 @@ namespace SkeletonDataServer
 
         //output file for a specific subject
         public string filename = @"C:\Users\rhclab\Desktop\Subject_" + subjectNum +  "_Time_" + getTimeStamp(DateTime.Now) + ".txt";
+
+        /*Symbolic constants for robot within allMoves array (array that will be declared later
+        that keeps track of when a robot should make a mistake during the dance)*/
+        static int DONTMAKEERROR = 0;
+        const int MAKEERROR = 1;
+
+        /*Symbolic constants for which error state [many mistakes] -> [fewer mistakes] -> [very very few mistakes]*/
+        const int STAGE0PREINTERACTION = 0;
+        const int STAGE1MANYMISTAKES = 1;
+        const int STAGE2FEWMISTAKES = 2;
+        const int STAGE3NONEISHMISTAKES = 3;
 
         //Kinect for Windows V2 Sensor
         public KinectSensor sensor;
@@ -114,8 +114,8 @@ namespace SkeletonDataServer
         string incorrectAction;
 
         //variables needed to determine if there is any hand or foot shaking
-        double footLastX = 0.0;
-        double handLastX = 0.0;
+        double leftFootLastX = 0.0, rightFootLastX = 0.0;
+        double leftHandLastX = 0.0, rightHandLastX = 0.0;
 
         //random number needed for the three test conditions
         Random random = new Random();
@@ -178,7 +178,7 @@ namespace SkeletonDataServer
 			RIGHT_HAND_OUT_8, 
 			RIGHT_HAND_IN_9, 
 			RIGHT_HAND_SHAKE_10, 
-			HOKEY_POKEY_11. 
+			HOKEY_POKEY_11, 
 			LEFT_LEG_IN_12, 
 			LEFT_LEG_OUT_13, 
 			LEFT_LEG_IN_14, 
@@ -195,7 +195,7 @@ namespace SkeletonDataServer
 
 		public enum DanceMove 
 		{ 
-			BHO //both hands out to start the interaction
+			BHO, //both hands out to start the interaction
 			LHI, 
 			LHS, 
 			RHI, 
@@ -206,8 +206,7 @@ namespace SkeletonDataServer
 			RLS,
 			HP,
 			DEFAULT, 
-			INVALID,
-			OTHER 
+			INVALID
 		}
 
 		/* Class Names: DanceState and StateTransition
@@ -254,7 +253,7 @@ namespace SkeletonDataServer
 					{ new StateTransition(DanceState.PURGATORY_1, DanceMove.LLI), DanceState.LEFT_LEG_IN_12 },
 					{ new StateTransition(DanceState.PURGATORY_1, DanceMove.RLI), DanceState.RIGHT_LEG_IN_17 },
 					{ new StateTransition(DanceState.PURGATORY_1, DanceMove.DEFAULT), DanceState.DEFAULT_STATE_22 },
-					{ new StateTransition(DanceState.PURGATORY_1, DanceMove.HP, DanceState.HOKEY_POKEY_NON_SEQUENTIAL_23 },
+					{ new StateTransition(DanceState.PURGATORY_1, DanceMove.HP), DanceState.HOKEY_POKEY_NON_SEQUENTIAL_23 },
 					{ new StateTransition(DanceState.LEFT_HAND_IN_2, DanceMove.LHI), DanceState.LEFT_HAND_IN_2 },
 					{ new StateTransition(DanceState.LEFT_HAND_IN_2, DanceMove.DEFAULT), DanceState.LEFT_HAND_OUT_3 },
 					{ new StateTransition(DanceState.LEFT_HAND_OUT_3, DanceMove.DEFAULT), DanceState.LEFT_HAND_OUT_3 },
@@ -310,23 +309,22 @@ namespace SkeletonDataServer
 				{
 					//looks like purgatory works best as serving as the state right after the person begins the interaction
 					//by holding both hands out, and then waiting for the next dance
-					//otherwise it's not accessed again
 
 					//now depending on the danceMove send it to a different tree
-					if(danceMove == LHI || danceMove == LHS)
-						nextState = LEFT_HAND_IN_2; 	//send it to the beginning of the left hand tree
-					else if(danceMove == RHI || danceMove == RHS)
-						nextState = RIGHT_HAND_IN_7; 	//send it to the beginning of the right hand tree
-					else if(danceMove == LLI || danceMove == LLS)
-						nextState = LEFT_LEG_IN_12;  	//send it to the beginning of the left leg tree
-					else if(danceMove == RLI || danceMove == RLS)
-						nextState = RIGHT_LEG_IN_17;	//send it to the beginning of the right leg tree
-					else if(danceMove == DEFAULT)
-						nextState = DEFAULT_STATE_22;
-					else if(danceMove == HP)
-						nextState = HOKEY_POKEY_NON_SEQUENTIAL_23;
+					if(danceMove == DanceMove.LHI || danceMove == DanceMove.LHS)
+						nextState = DanceState.LEFT_HAND_IN_2; 	//send it to the beginning of the left hand tree
+                    else if (danceMove == DanceMove.RHI || danceMove == DanceMove.RHS)
+                        nextState = DanceState.RIGHT_HAND_IN_7; 	//send it to the beginning of the right hand tree
+                    else if (danceMove == DanceMove.LLI || danceMove == DanceMove.LLS)
+                        nextState = DanceState.LEFT_LEG_IN_12;  	//send it to the beginning of the left leg tree
+                    else if (danceMove == DanceMove.RLI || danceMove == DanceMove.RLS)
+                        nextState = DanceState.RIGHT_LEG_IN_17;	//send it to the beginning of the right leg tree
+                    else if (danceMove == DanceMove.DEFAULT)
+                        nextState = DanceState.DEFAULT_STATE_22;
+                    else if (danceMove == DanceMove.HP)
+                        nextState = DanceState.HOKEY_POKEY_NON_SEQUENTIAL_23;
 					else 								//for an invalid move								
-						nextState = PURGATORY_1;
+                        nextState = DanceState.PURGATORY_1;
 				}
 				return nextState;
 			}
@@ -337,6 +335,9 @@ namespace SkeletonDataServer
 				return CurrentState;
 			}
 		}
+
+        //set up the Dance state machine
+        Dance theHokeyPokeyDance = new Dance();
 
 		/*	Function Name:	SavingKinectData
 		* 	Parameters:		none
@@ -400,11 +401,7 @@ namespace SkeletonDataServer
                             flag = false;
                         }
 
-                        //the below location may not be correct
-                        //but anyway, set up the Dance state machine
-                		Dance theHokeyPokeyDance = new Dance();
-
-                		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                		Console.WriteLine("\tJust started. Current state = " + theHokeyPokeyDance.CurrentState);
 
                         //event handlers check the "processing" variable before attempting to process code
                         //when a single event handler is clear to process data, it sets the variable to false so that other handlers do not process the code
@@ -427,6 +424,7 @@ namespace SkeletonDataServer
                                     response = Encoding.UTF8.GetString(bytes);
                                     Console.WriteLine("Received data: " + response);
 
+                                    /*
                                     //REMOVE THE FOLLOWING WHEN IN ACTUAL EXPERIMENT
                                     Console.Write("Moves array: [");
                                     //debugging stuff, print out mistake array and counter
@@ -437,7 +435,7 @@ namespace SkeletonDataServer
                                     Console.WriteLine(allMoves[19].ToString() + "]");
 
                                     Console.WriteLine("Counter: " + counter.ToString());
-                                    //REMOVE THE ABOVE WHEN IN ACTUAL EXPERIMENT
+                                    //REMOVE THE ABOVE WHEN IN ACTUAL EXPERIMENT*/
                                 }
                         
                                 processing = false; //now future event handlers can start processing again
@@ -560,16 +558,19 @@ namespace SkeletonDataServer
 
                                 //we have all of the joint data now
                                 //so it's time to determine what action the participant performed
-                                if (changingState)
+                                /*if (changingState)
                                 {
                                 }
-                                else if (bothHandsOutToSide() && !started && !ended)
+                                else if (bothHandsOutToSide() && !started && !ended)*/
+                                if (bothHandsOutToSide() && !started && !ended)
                                 {
-                                	previousPosition = ""
+                                	previousPosition = "started";
                                 	started = true;
                                 	Console.WriteLine("Participant stuck out both arms to signify the beginning of interaction");
                                 	theHokeyPokeyDance.MoveNext(DanceMove.BHO);
                                 	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
+                                	dataToSend = "getStarted";
                                 }
                                 else if (bothHandsIn() && started)
                                 {
@@ -577,6 +578,9 @@ namespace SkeletonDataServer
                                 	theHokeyPokeyDance.MoveNext(DanceMove.BHO);
                                 	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
                                 	previousPosition = "bothHandsIn";
+
+                                	dataToSend = "nothing here alright";
+                                	readyToWrite = true;
                                 }
                                 else if (doingHokeyPokey() && started)
                                 {
@@ -584,87 +588,149 @@ namespace SkeletonDataServer
                                 	theHokeyPokeyDance.MoveNext(DanceMove.HP);
                                 	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
                                 	previousPosition = "hokeyPokey";
+
+                                	dataToSend = "hokeyPokey";
+                                	readyToWrite = true;
                                 }
                                 else if (leftLegIn() && started)
                                 {
                                 	if(previousPosition.Equals("leftLegIn") || previousPosition.Equals("leftLegShake"))
                                 	{
-                                		if(leftLegShaking(footLastX))
+                                		if(leftLegShaking(leftFootLastX))
                                 		{
-                                			footLastX = Convert.ToDouble(jointNamesAndData[15,2]);
+                                			leftFootLastX = Convert.ToDouble(jointNamesAndData[15,2]);
                                 			previousPosition = "leftLegShake";
 
                                 			Console.WriteLine("Participant shook their left leg");
                                 			theHokeyPokeyDance.MoveNext(DanceMove.LLS);
                                 			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
+                                			dataToSend = "leftLegShake";
+                                			readyToWrite = true;
                                 		}
                                 	}
                                 	else
                                 	{
-                                		footLastX = Convert.ToDouble(jointNamesAndData[15,2]);
+                                		leftFootLastX = Convert.ToDouble(jointNamesAndData[15,2]);
                                 		previousPosition = "leftLegIn";
 
                                 		Console.WriteLine("Participant put their left leg in");
                                 		theHokeyPokeyDance.MoveNext(DanceMove.LLI);
                                 		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
+                                		dataToSend = "leftLegIn";
+                                		readyToWrite = true;
                                 	}
                                 }
                                 else if (rightLegIn() && started)
                                 {
                                 	if(previousPosition.Equals("rightLegIn") || previousPosition.Equals("rightLegShake"))
                                 	{
-                                		if(rightLegShaking(footLastX))
+                                		if(rightLegShaking(rightFootLastX))
                                 		{
-                                			footLastX = Convert.ToDouble(jointNamesAndData[19,2]);
+                                			rightFootLastX = Convert.ToDouble(jointNamesAndData[19,2]);
                                 			previousPosition = "rightLegShake";
 
                                 			Console.WriteLine("Participant shook their right leg");
                                 			theHokeyPokeyDance.MoveNext(DanceMove.RLS);
                                 			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
+                                			dataToSend = "rightLegShake";
+                                			readyToWrite = true;
                                 		}
                                 	}
                                 	else
                                 	{
-                                		footLastX = Convert.ToDouble(jointNamesAndData[19,2]);
+                                		rightFootLastX = Convert.ToDouble(jointNamesAndData[19,2]);
                                 		previousPosition = "rightLegIn";
 
                                 		Console.WriteLine("Participant put their right leg in");
                                 		theHokeyPokeyDance.MoveNext(DanceMove.RLI);
                                 		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
+                                		dataToSend = "rightLegIn";
+                                		readyToWrite = true;
                                 	}
                                 }
                                 else if (leftArmIn() && started)
                                 {
                                 	if(previousPosition.Equals("leftArmIn") || previousPosition.Equals("leftArmShake"))
                                 	{
-                                		if(leftArmShaking(handLastX))
+                                		if(leftArmShaking(leftHandLastX))
                                 		{
-                                			handLastX = Convert.ToDouble(jointNamesAndData[7,2]);
+                                			leftHandLastX = Convert.ToDouble(jointNamesAndData[7,2]);
                                 			previousPosition = "leftArmShake";
 
                                 			Console.WriteLine("Participant shook their left arm");
-                                			theHokeyPokeyDance.MoveNext(DanceMove.LHI);
+                                			theHokeyPokeyDance.MoveNext(DanceMove.LHS);
                                 			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
+                                			dataToSend = "leftArmShake";
+                                			readyToWrite = true;
                                 		}
                                 	}
                                 	else
                                 	{
-                                		footLastX = Convert.ToDouble(jointNamesAndData[7,2]);
-                                		previousPosition = "leftLegIn";
+                                		leftHandLastX = Convert.ToDouble(jointNamesAndData[7,2]);
+                                		previousPosition = "leftArmIn";
 
-                                		Console.WriteLine("Participant put their left leg in");
-                                		theHokeyPokeyDance.MoveNext(DanceMove.LLI);
+                                		Console.WriteLine("Participant put their left arm in");
+                                		theHokeyPokeyDance.MoveNext(DanceMove.LHI);
                                 		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
+                                		dataToSend = "leftArmIn";
+                                		readyToWrite = true;
                                 	}
                                 }
                                 else if (rightArmIn() && started)
                                 {
+                                	if(previousPosition.Equals("rightArmIn") || previousPosition.Equals("rightArmShake"))
+                                	{
+                                		if(rightArmShaking(rightHandLastX))
+                                		{
+                                			rightHandLastX = Convert.ToDouble(jointNamesAndData[11,2]);
+                                			previousPosition = "rightArmShake";
+
+                                			Console.WriteLine("Participant shook their right arm");
+                                			theHokeyPokeyDance.MoveNext(DanceMove.RHS);
+                                			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
+                                			dataToSend = "rightArmShake";
+                                			readyToWrite = true;
+                                		}
+                                	}
+                                	else
+                                	{
+                                		rightHandLastX = Convert.ToDouble(jointNamesAndData[11,2]);
+                                		previousPosition = "rightArmIn";
+
+                                		Console.WriteLine("Participant put their right arm in");
+                                		theHokeyPokeyDance.MoveNext(DanceMove.RHI);
+                                		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
+                                		dataToSend = "rightArmIn";
+                                		readyToWrite = true;
+                                	}
                                 }
                                 else if (inDefault())
                                 {
+                                	Console.WriteLine("Participant went back to default position");
+                                	theHokeyPokeyDance.MoveNext(DanceMove.DEFAULT);
+                                	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                                	previousPosition = "default";
+
+                                	dataToSend = "default";
+                                	readyToWrite = true;
                                 }
                                 else
                                 {
+                                	Console.WriteLine("Participant did some invalid move");
+                                	theHokeyPokeyDance.MoveNext(DanceMove.INVALID);
+                                	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                                	previousPosition = "invalid";
+
+                                	dataToSend = "nothing here alright";
+                                	readyToWrite = true;
                                 }
                             } //end of "if(connected && !dataBeingPrepped" loop
                         } //end of "if (body.IsTracked)" loop
