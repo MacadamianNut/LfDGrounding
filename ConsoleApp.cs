@@ -290,7 +290,7 @@ namespace SkeletonDataServer
 					{ new StateTransition(DanceState.RIGHT_LEG_IN_17, DanceMove.RLI), DanceState.RIGHT_LEG_IN_17 },
 					{ new StateTransition(DanceState.RIGHT_LEG_IN_17, DanceMove.DEFAULT), DanceState.RIGHT_LEG_OUT_18 },
 					{ new StateTransition(DanceState.RIGHT_LEG_OUT_18, DanceMove.DEFAULT), DanceState.RIGHT_LEG_OUT_18 },
-					{ new StateTransition(DanceState.RIGHT_LEG_OUT_18, DanceMove.RLI), DanceState.RIGHT_LEG_IN_17 },
+					{ new StateTransition(DanceState.RIGHT_LEG_OUT_18, DanceMove.RLI), DanceState.RIGHT_LEG_IN_19 },
 					{ new StateTransition(DanceState.RIGHT_LEG_IN_19, DanceMove.RLI), DanceState.RIGHT_LEG_IN_19 },
 					{ new StateTransition(DanceState.RIGHT_LEG_IN_19, DanceMove.DEFAULT), DanceState.RIGHT_LEG_OUT_18 },
 					{ new StateTransition(DanceState.RIGHT_LEG_IN_19, DanceMove.RLS), DanceState.RIGHT_LEG_SHAKE_20 },
@@ -377,7 +377,7 @@ namespace SkeletonDataServer
             	//EndPoint sendEndPoint;
 
       			try{
-                    clientSocket.Connect("10.11.132.21", 3333);
+                    clientSocket.Connect("10.11.130.248", 3333);
          			Console.WriteLine("Connected to Darwin");
             		connected = true;
       			} catch (SocketException e)
@@ -398,10 +398,9 @@ namespace SkeletonDataServer
                         {
                             //this stuff is shown once
                             Console.WriteLine("Entered while loop for interaction with the server");
+                            Console.WriteLine("\tJust started. Current state = " + theHokeyPokeyDance.CurrentState);
                             flag = false;
                         }
-
-                		Console.WriteLine("\tJust started. Current state = " + theHokeyPokeyDance.CurrentState);
 
                         //event handlers check the "processing" variable before attempting to process code
                         //when a single event handler is clear to process data, it sets the variable to false so that other handlers do not process the code
@@ -571,6 +570,7 @@ namespace SkeletonDataServer
                                 	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
                                 	dataToSend = "getStarted";
+                                    readyToWrite = true;
                                 }
                                 else if (bothHandsIn() && started)
                                 {
@@ -712,7 +712,7 @@ namespace SkeletonDataServer
                                 		readyToWrite = true;
                                 	}
                                 }
-                                else if (inDefault())
+                                else if (inDefault() && started)
                                 {
                                 	Console.WriteLine("Participant went back to default position");
                                 	theHokeyPokeyDance.MoveNext(DanceMove.DEFAULT);
@@ -724,13 +724,21 @@ namespace SkeletonDataServer
                                 }
                                 else
                                 {
-                                	Console.WriteLine("Participant did some invalid move");
-                                	theHokeyPokeyDance.MoveNext(DanceMove.INVALID);
-                                	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
-                                	previousPosition = "invalid";
+                                    if (started) //participant did some invalid move after the interaction started
+                                    {
+                                        Console.WriteLine("Participant did some invalid move");
+                                        theHokeyPokeyDance.MoveNext(DanceMove.INVALID);
+                                        Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                                        previousPosition = "invalid";
 
-                                	dataToSend = "nothing here alright";
-                                	readyToWrite = true;
+                                        dataToSend = "nothing here alright";
+                                        readyToWrite = true;
+                                    }
+                                    else //this represents the participant doing whatever before the interaction begins
+                                    {
+                                        dataToSend = "nothing here alright";
+                                        readyToWrite = true;
+                                    }
                                 }
                             } //end of "if(connected && !dataBeingPrepped" loop
                         } //end of "if (body.IsTracked)" loop
