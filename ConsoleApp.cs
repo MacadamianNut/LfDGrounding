@@ -548,7 +548,7 @@ namespace SkeletonDataServer
 
                                 //we have all of the joint data now
                                 //so it's time to determine what action the participant performed
-                                if ((changingState == true) && (stateCount > STAGE1MANYMISTAKES))
+                                if ((changingState == true) && (stateCount > STAGE0PREINTERACTION))
                                 {
                                 	//by changing state, I mean starting another iteration of the hokey pokey
                                 	stateCount++;
