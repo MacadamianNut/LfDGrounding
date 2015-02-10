@@ -20,6 +20,8 @@ namespace SkeletonDataServer
 		//change this variable for each subject
 		public static string subjectNum = "1";
 
+        public static string ipaddress = "10.11.136.218";
+
 		//to be used in the output file transcribing the events during the interaction
 		public string timeStamp = "";
 
@@ -37,7 +39,7 @@ namespace SkeletonDataServer
 
         /*Symbolic constants for robot within allMoves array (array that will be declared later
         that keeps track of when a robot should make a mistake during the dance)*/
-        static int DONTMAKEERROR = 0;
+        const int DONTMAKEERROR = 0;
         const int MAKEERROR = 1;
 
         /*Symbolic constants for which error state [many mistakes] -> [fewer mistakes] -> [very very few mistakes]*/
@@ -119,7 +121,7 @@ namespace SkeletonDataServer
 
         //random number needed for the three test conditions
         Random random = new Random();
-        int stateCount = 0, numMistakes, randomNum;
+        int stateCount = STAGE0PREINTERACTION, numMistakes, randomNum;
 
         string[] incorrectMoveArray = {"leftArm", "rightArm", "leftLeg", "rightLeg", "default"};
 
@@ -150,14 +152,13 @@ namespace SkeletonDataServer
         //variable to keep track of current stage
         string stage = "";
 
-        //variable to keep track of current place in a stage
-        int counter = 0;
-
         //array for the moves (20 in total)
         int[] allMoves = new int[20] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-        //array for all of the shakes (leftArmShake, rightArmShake, leftArmShake) to let you know when
-        int[] shakeArray = new int[4] { 0, 0, 0, 0 };
+        //array to let you know when the end of the branch is reached (lArm, rArm, lLeg, rLeg)
+        //need to keep track of this to know when to go to the next iteration of the dance
+        int[] branchTracker = new int[4] { 0, 0, 0, 0 };
+        const int BRANCH_NOT_DONE = 0, BRANCH_DONE = 1;
 
         bool allShakesDone = false;
 
@@ -312,19 +313,22 @@ namespace SkeletonDataServer
 
 					//now depending on the danceMove send it to a different tree
 					if(danceMove == DanceMove.LHI || danceMove == DanceMove.LHS)
-						nextState = DanceState.LEFT_HAND_IN_2; 	//send it to the beginning of the left hand tree
+						nextState = DanceState.LEFT_HAND_IN_2; 		//send it to the beginning of the left hand tree
                     else if (danceMove == DanceMove.RHI || danceMove == DanceMove.RHS)
                         nextState = DanceState.RIGHT_HAND_IN_7; 	//send it to the beginning of the right hand tree
                     else if (danceMove == DanceMove.LLI || danceMove == DanceMove.LLS)
                         nextState = DanceState.LEFT_LEG_IN_12;  	//send it to the beginning of the left leg tree
                     else if (danceMove == DanceMove.RLI || danceMove == DanceMove.RLS)
-                        nextState = DanceState.RIGHT_LEG_IN_17;	//send it to the beginning of the right leg tree
+                        nextState = DanceState.RIGHT_LEG_IN_17;		//send it to the beginning of the right leg tree
                     else if (danceMove == DanceMove.DEFAULT)
                         nextState = DanceState.DEFAULT_STATE_22;
                     else if (danceMove == DanceMove.HP)
                         nextState = DanceState.HOKEY_POKEY_NON_SEQUENTIAL_23;
-					else 								//for an invalid move								
+					else 											//for an invalid move 					
                         nextState = DanceState.PURGATORY_1;
+
+                    //note that there are no transitions for the hokey pokey at the end of each limb branch in the state machine
+            		//so any move done at those states will automatically shift the current state away from those end points
 				}
 				return nextState;
 			}
@@ -377,7 +381,7 @@ namespace SkeletonDataServer
             	//EndPoint sendEndPoint;
 
       			try{
-                    clientSocket.Connect("10.11.130.248", 3333);
+                    clientSocket.Connect(ipaddress, 3333);
          			Console.WriteLine("Connected to Darwin");
             		connected = true;
       			} catch (SocketException e)
@@ -422,19 +426,6 @@ namespace SkeletonDataServer
                                     int i = clientSocket.Receive(bytes); //Cory note: may need to change this code to actually make sure we recieved a message
                                     response = Encoding.UTF8.GetString(bytes);
                                     Console.WriteLine("Received data: " + response);
-
-                                    /*
-                                    //REMOVE THE FOLLOWING WHEN IN ACTUAL EXPERIMENT
-                                    Console.Write("Moves array: [");
-                                    //debugging stuff, print out mistake array and counter
-                                    for (int y = 0; y < 19; y++)
-                                    {
-                                        Console.Write(allMoves[y].ToString() + ",");
-                                    }
-                                    Console.WriteLine(allMoves[19].ToString() + "]");
-
-                                    Console.WriteLine("Counter: " + counter.ToString());
-                                    //REMOVE THE ABOVE WHEN IN ACTUAL EXPERIMENT*/
                                 }
                         
                                 processing = false; //now future event handlers can start processing again
@@ -557,19 +548,107 @@ namespace SkeletonDataServer
 
                                 //we have all of the joint data now
                                 //so it's time to determine what action the participant performed
-                                /*if (changingState)
+                                if ((changingState == true) && (stateCount > STAGE1MANYMISTAKES))
                                 {
+                                	//by changing state, I mean starting another iteration of the hokey pokey
+                                	stateCount++;
+
+                                	//do an invalid transition to reset the state to PURGATORY_1
+                                	theHokeyPokeyDance.MoveNext(DanceMove.INVALID);
+
+                                	//reset branchTracker array
+                                	for(int k=0; k<branchTracker.Length; k++)
+                                	{
+                                		branchTracker[k] = BRANCH_NOT_DONE;
+                                	}
+
+                                	if(stateCount > STAGE3NONEISHMISTAKES) //if we're already in the third iteration
+                                	{
+                                		ended = true;
+                                		started = false;
+
+                                		Console.WriteLine("***REACHED END OF THIRD ITERATION OF DANCE. INTERACTION OVER***");
+
+                                		//then the interaction is done
+                                		dataToSend = "end its done";
+                                	}
+                                	else
+                                	{
+                                		if(stateCount == STAGE2FEWMISTAKES)
+                                		{
+                                			stage = "two";
+                                			numMistakes = random.Next(0,4) + 4; //pick randomly between 4-7 mistakes
+                                			dataToSend = "changingTwo now go";
+
+                                			Console.WriteLine("***STARTING SECOND ITERATION OF DANCE***");
+                                		}
+                                		else if(stateCount == STAGE3NONEISHMISTAKES)
+                                		{
+                                			stage = "three";
+                                			numMistakes = random.Next(0,4); 	//pick randomly between 0-3 mistakes
+                                			dataToSend = "changingThree now go";
+
+                                			Console.WriteLine("***STARTING THIRD ITERATION OF DANCE***");
+                                		}
+                                	}
+
+                               		//make sure that the allMoves array is clear
+                               		for(int i=0; i<allMoves.Length; i++)
+                               		{
+                               			allMoves[i] = DONTMAKEERROR; //DONTMAKEERROR = 0;
+                               		}
+
+                               		//now that we have randomly chosen the number of mistakes, we need to randomly pick which
+                               		//of the 20 distinct moves per iteration will be a mistake
+                               		int filler = 0;
+                               		while (filler < numMistakes)
+                               		{
+                               			randomNum = random.Next(0,20);
+
+                               			if(allMoves[randomNum] == DONTMAKEERROR)
+                               			{
+                               				allMoves[randomNum] = MAKEERROR; //MAKEERROR = 1
+                               				filler++;
+                               			}
+                               		}
+
+                               		//we've finished changing states, now update the variable
+                               		changingState = false;
+                               		readyToWrite = true;
                                 }
-                                else if (bothHandsOutToSide() && !started && !ended)*/
-                                if (bothHandsOutToSide() && !started && !ended)
+                                else if (bothHandsOutToSide() && !started && !ended)
                                 {
                                 	previousPosition = "started";
                                 	started = true;
                                 	Console.WriteLine("Participant stuck out both arms to signify the beginning of interaction");
+                                	Console.WriteLine("***STARTING FIRST ITERATION OF DANCE***");
                                 	theHokeyPokeyDance.MoveNext(DanceMove.BHO);
                                 	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
-                                	dataToSend = "getStarted";
+                                	stateCount = STAGE1MANYMISTAKES;
+                                	stage = "one";
+
+                                	//make sure the allMoves array is clear
+                                	for(int i=0; i<allMoves.Length; i++)
+                                	{
+                                		allMoves[i] = DONTMAKEERROR;
+                                	}
+
+                                	numMistakes = random.Next(0,5) + 8; //pick randomly between 8-12 mistakes
+
+                                	//determine when the robot will make a mistake
+                                	int filler = 0;
+                                	while(filler < numMistakes)
+                                	{
+                                		randomNum = random.Next(0,20);
+                                		if(allMoves[randomNum] == DONTMAKEERROR)
+                                		{
+                                			allMoves[randomNum] = MAKEERROR;
+                                			filler++;
+                                		}
+                                	}
+
+                                	dataToSend = "getStarted 0 yes";
                                     readyToWrite = true;
                                 }
                                 else if (bothHandsIn() && started)
@@ -588,6 +667,54 @@ namespace SkeletonDataServer
                                 	theHokeyPokeyDance.MoveNext(DanceMove.HP);
                                 	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
                                 	previousPosition = "hokeyPokey";
+
+                                	//check to see if we are now at the end of one of the limb branch (lArm, rArm, lLeg, rLeg)
+                                	//this is important because an iteration doesn't end until the ends of all these 4 branches are reached
+                                	switch(theHokeyPokeyDance.CurrentState)
+                                	{
+                                		case(DanceState.HOKEY_POKEY_6): //the hokey pokey that ends the left arm branch
+                                			branchTracker[0] = BRANCH_DONE;
+                                            Console.Write("branchTracker: [ ");
+                                            for (int p = 0; p < branchTracker.Length; p++)
+                                            {
+                                                Console.Write(branchTracker[p] + " ");
+                                            }
+                                            Console.WriteLine("]");
+                                            break;
+                                		case(DanceState.HOKEY_POKEY_11): //the hokey pokey that ends the right arm branch
+                                			branchTracker[1] = BRANCH_DONE;
+                                            Console.Write("branchTracker: [ ");
+                                            for (int p = 0; p < branchTracker.Length; p++)
+                                            {
+                                                Console.Write(branchTracker[p] + " ");
+                                            }
+                                            Console.WriteLine("]");
+                                			break;
+                                		case(DanceState.HOKEY_POKEY_16): //the hokey pokey that ends the left leg branch
+                                			branchTracker[2] = BRANCH_DONE;
+                                             Console.Write("branchTracker: [ ");
+                                            for (int p = 0; p < branchTracker.Length; p++)
+                                            {
+                                                Console.Write(branchTracker[p] + " ");
+                                            }
+                                            Console.WriteLine("]");
+                                			break;
+                                		case(DanceState.HOKEY_POKEY_21): //the hokey pokey that ends the right leg branch
+                                			branchTracker[3] = BRANCH_DONE;
+                                             Console.Write("branchTracker: [ ");
+                                            for (int p = 0; p < branchTracker.Length; p++)
+                                            {
+                                                Console.Write(branchTracker[p] + " ");
+                                            }
+                                            Console.WriteLine("]");
+                                			break;
+                                	}
+
+                                	//now check to see if all 4 limb branches are done (to know when to go to next iteration of dance)
+                                	if(branchTracker[0] == BRANCH_DONE && branchTracker[1] == BRANCH_DONE && branchTracker[2] == BRANCH_DONE && branchTracker[3] == BRANCH_DONE)
+                                	{
+                                		changingState = true;
+                                	}
 
                                 	dataToSend = "hokeyPokey";
                                 	readyToWrite = true;
