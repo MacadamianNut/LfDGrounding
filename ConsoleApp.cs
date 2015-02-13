@@ -20,7 +20,7 @@ namespace SkeletonDataServer
 		//change this variable for each subject
 		public static string subjectNum = "1";
 
-        public static string ipaddress = "10.11.136.218";
+        public static string ipaddress = "10.11.133.65";
 
 		//to be used in the output file transcribing the events during the interaction
 		public string timeStamp = "";
@@ -110,10 +110,16 @@ namespace SkeletonDataServer
         //this variable checks for the last hokeypokey done in the third iteration to end the interaction
         bool ended = false;
 
+        bool skipLogic = false;
+
         //keep track of previous position, especially useful for determining if a hand or foot is shaking
         string previousPosition = "default";
 
         string incorrectAction;
+
+        string yesOrNoMovement;
+
+        int movementDelay;
 
         //variables needed to determine if there is any hand or foot shaking
         double leftFootLastX = 0.0, rightFootLastX = 0.0;
@@ -121,7 +127,7 @@ namespace SkeletonDataServer
 
         //random number needed for the three test conditions
         Random random = new Random();
-        int stateCount = STAGE0PREINTERACTION, numMistakes, randomNum;
+        int stateCount = STAGE0PREINTERACTION, numMistakes, randomNum, tempRandom;
 
         string[] incorrectMoveArray = {"leftArm", "rightArm", "leftLeg", "rightLeg", "default"};
 
@@ -159,8 +165,6 @@ namespace SkeletonDataServer
         //need to keep track of this to know when to go to the next iteration of the dance
         int[] branchTracker = new int[4] { 0, 0, 0, 0 };
         const int BRANCH_NOT_DONE = 0, BRANCH_DONE = 1;
-
-        bool allShakesDone = false;
 
         //variable that keeps track of when to change state (and therefore when to retrieve a new random number for the stage)
         bool changingState = false;
@@ -666,58 +670,104 @@ namespace SkeletonDataServer
                                 	Console.WriteLine("Participant did the hokey pokey");
                                 	theHokeyPokeyDance.MoveNext(DanceMove.HP);
                                 	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
-                                	previousPosition = "hokeyPokey";
+                                	//previousPosition = "hokeyPokey";
 
-                                	//check to see if we are now at the end of one of the limb branch (lArm, rArm, lLeg, rLeg)
-                                	//this is important because an iteration doesn't end until the ends of all these 4 branches are reached
-                                	switch(theHokeyPokeyDance.CurrentState)
+                                	//check to see if the robot is supposed to make a mistake
+                                	//also have to watch out for an out of bounds exception since the non-sequential hokey pokey state
+                                	//is not considered part of the dance and therefore not included in the allMoves array
+                                	if(((int)theHokeyPokeyDance.CurrentState <= (int)DanceState.HOKEY_POKEY_21) && allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR) //if it is supposed to make an error
                                 	{
-                                		case(DanceState.HOKEY_POKEY_6): //the hokey pokey that ends the left arm branch
-                                			branchTracker[0] = BRANCH_DONE;
-                                            Console.Write("branchTracker: [ ");
-                                            for (int p = 0; p < branchTracker.Length; p++)
-                                            {
-                                                Console.Write(branchTracker[p] + " ");
-                                            }
-                                            Console.WriteLine("]");
-                                            break;
-                                		case(DanceState.HOKEY_POKEY_11): //the hokey pokey that ends the right arm branch
-                                			branchTracker[1] = BRANCH_DONE;
-                                            Console.Write("branchTracker: [ ");
-                                            for (int p = 0; p < branchTracker.Length; p++)
-                                            {
-                                                Console.Write(branchTracker[p] + " ");
-                                            }
-                                            Console.WriteLine("]");
-                                			break;
-                                		case(DanceState.HOKEY_POKEY_16): //the hokey pokey that ends the left leg branch
-                                			branchTracker[2] = BRANCH_DONE;
-                                             Console.Write("branchTracker: [ ");
-                                            for (int p = 0; p < branchTracker.Length; p++)
-                                            {
-                                                Console.Write(branchTracker[p] + " ");
-                                            }
-                                            Console.WriteLine("]");
-                                			break;
-                                		case(DanceState.HOKEY_POKEY_21): //the hokey pokey that ends the right leg branch
-                                			branchTracker[3] = BRANCH_DONE;
-                                             Console.Write("branchTracker: [ ");
-                                            for (int p = 0; p < branchTracker.Length; p++)
-                                            {
-                                                Console.Write(branchTracker[p] + " ");
-                                            }
-                                            Console.WriteLine("]");
-                                			break;
-                                	}
+                                		Console.WriteLine("Robot is making a mistake when person is doing hokeypokey");
 
-                                	//now check to see if all 4 limb branches are done (to know when to go to next iteration of dance)
-                                	if(branchTracker[0] == BRANCH_DONE && branchTracker[1] == BRANCH_DONE && branchTracker[2] == BRANCH_DONE && branchTracker[3] == BRANCH_DONE)
+                                		//determine if the robot will move or not 0=no, 1=yes
+                                		tempRandom = random.Next(0,2);
+
+                                		if(tempRandom == 0) //no movement
+                                		{
+                                			incorrectAction = "hokeyPokey";
+                                			yesOrNoMovement = "no";
+                                		}
+                                		else
+                                		{
+                                			incorrectAction = determineIncorrectMove("default");
+                                			yesOrNoMovement = "yes";
+                                		}
+
+                                		//determine what the delay will be
+                                		movementDelay = random.Next(0,6);
+
+                                		allMoves[(int)theHokeyPokeyDance.CurrentState - 2] = DONTMAKEERROR; //don't make an error for this state again
+
+                                		dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
+                                		//readyToWrite = true;	
+                                	}
+                                	else //then do things normally
                                 	{
-                                		changingState = true;
-                                	}
+                                		Console.WriteLine("Robot is correctly following the person and doing the hokeypokey");
 
-                                	dataToSend = "hokeyPokey";
-                                	readyToWrite = true;
+                                		//Cory note: I could be wrong, but you only want to update the previous
+                                		//position when the robot does the correct thing
+                                		//otherwise, for example, if a person sticks their left leg in but the robot makes a mistake
+                                		//and then in the next step, the person (for some reason) shakes their leg.
+                                		//If the previous position is recorded then the robot will skip sticking its left leg in
+                                		//and go straight to left leg shake (the state machine isn't used to give commands to the robot)
+                                		previousPosition = "hokeyPokey";
+
+                                		//check to see if we are now at the end of one of the limb branch (lArm, rArm, lLeg, rLeg)
+                                		//this is important because an iteration doesn't end until the ends of all these 4 branches are reached
+                                		switch(theHokeyPokeyDance.CurrentState)
+                                		{
+                                			case(DanceState.HOKEY_POKEY_6): //the hokey pokey that ends the left arm branch
+                                				branchTracker[0] = BRANCH_DONE;
+                                            	Console.Write("branchTracker: [ ");
+                                            	for (int p = 0; p < branchTracker.Length; p++)
+                                            	{
+                                                	Console.Write(branchTracker[p] + " ");
+                                            	}
+                                            	Console.WriteLine("]");
+                                            	break;
+	                                		case(DanceState.HOKEY_POKEY_11): //the hokey pokey that ends the right arm branch
+	                                			branchTracker[1] = BRANCH_DONE;
+	                                            Console.Write("branchTracker: [ ");
+	                                            for (int p = 0; p < branchTracker.Length; p++)
+	                                            {
+	                                                Console.Write(branchTracker[p] + " ");
+	                                            }
+	                                            Console.WriteLine("]");
+	                                			break;
+	                                		case(DanceState.HOKEY_POKEY_16): //the hokey pokey that ends the left leg branch
+	                                			branchTracker[2] = BRANCH_DONE;
+	                                             Console.Write("branchTracker: [ ");
+	                                            for (int p = 0; p < branchTracker.Length; p++)
+	                                            {
+	                                                Console.Write(branchTracker[p] + " ");
+	                                            }
+	                                            Console.WriteLine("]");
+	                                			break;
+	                                		case(DanceState.HOKEY_POKEY_21): //the hokey pokey that ends the right leg branch
+	                                			branchTracker[3] = BRANCH_DONE;
+	                                             Console.Write("branchTracker: [ ");
+	                                            for (int p = 0; p < branchTracker.Length; p++)
+	                                            {
+	                                                Console.Write(branchTracker[p] + " ");
+	                                            }
+	                                            Console.WriteLine("]");
+	                                			break;
+	                                	}
+	                                	//now check to see if all 4 limb branches are done (to know when to go to next iteration of dance)
+                                		if(branchTracker[0] == BRANCH_DONE && branchTracker[1] == BRANCH_DONE && branchTracker[2] == BRANCH_DONE && branchTracker[3] == BRANCH_DONE)
+                                		{
+                                			changingState = true;
+                                		}
+
+                                		//determine what the delay will be
+                                		movementDelay = random.Next(0,2);
+
+                                		dataToSend = "hokeyPokey " + movementDelay + " yes";
+                                		//readyToWrite = true;
+                                	} 
+
+                                	readyToWrite = true;                          	
                                 }
                                 else if (leftLegIn() && started)
                                 {
@@ -725,29 +775,102 @@ namespace SkeletonDataServer
                                 	{
                                 		if(leftLegShaking(leftFootLastX))
                                 		{
-                                			leftFootLastX = Convert.ToDouble(jointNamesAndData[15,2]);
-                                			previousPosition = "leftLegShake";
+                                			skipLogic = true; //then don't process the following if block
+
+                                			//leftFootLastX = Convert.ToDouble(jointNamesAndData[15,2]);
+                                			//previousPosition = "leftLegShake";
 
                                 			Console.WriteLine("Participant shook their left leg");
                                 			theHokeyPokeyDance.MoveNext(DanceMove.LLS);
                                 			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
-                                			dataToSend = "leftLegShake";
-                                			readyToWrite = true;
+                                			//now check to see if the robot should make an error here
+                                			if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR) //if it is supposed to make an error
+                                			{
+                                				Console.WriteLine("Robot is making a mistake when person is shaking their left leg");
+
+                                				//determine if the robot will move or not 0=no, 1=yes
+                                				tempRandom = random.Next(0,2);
+
+                                				if(tempRandom == 0) //no movement
+                                				{
+                                					incorrectAction = "leftLegShake";
+                                					yesOrNoMovement = "no";
+                                				}
+                                				else
+                                				{
+                                					incorrectAction = determineIncorrectMove("leftLeg");
+                                					yesOrNoMovement = "yes";
+                                				}
+
+                                				//determine what the delay will be
+                                				movementDelay = random.Next(0,6);
+
+                                				allMoves[(int)theHokeyPokeyDance.CurrentState - 2] = DONTMAKEERROR;
+
+                                				dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
+                                			}
+                                			else //robot should do the correct thing here
+                                			{
+                                				Console.WriteLine("Robot is correctly following the participant and shaking its left leg");
+
+                                				leftFootLastX = Convert.ToDouble(jointNamesAndData[15,2]);
+                                				previousPosition = "leftLegShake";
+
+                                				movementDelay = random.Next(0,2);
+
+                                				dataToSend = "leftLegShake " + movementDelay + " yes";
+                                			}	
                                 		}
                                 	}
-                                	else
+                                	
+                                	if(!skipLogic) //for just left leg in (no shake)
                                 	{
-                                		leftFootLastX = Convert.ToDouble(jointNamesAndData[15,2]);
-                                		previousPosition = "leftLegIn";
-
                                 		Console.WriteLine("Participant put their left leg in");
                                 		theHokeyPokeyDance.MoveNext(DanceMove.LLI);
                                 		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
-                                		dataToSend = "leftLegIn";
-                                		readyToWrite = true;
+                                		if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR)
+                                		{
+                                			Console.WriteLine("Robot is making a mistake when person put their left leg in");
+
+                                			//determine if the robot will move or not 0=no, 1=yes
+                                			tempRandom = random.Next(0,2);
+
+                                			if(tempRandom == 0) //no movement
+                                			{
+                                				incorrectAction = "leftLegIn";
+                                				yesOrNoMovement = "no";
+                                			}
+                                			else
+                                			{
+                                				incorrectAction = determineIncorrectMove("leftLeg");
+                                				yesOrNoMovement = "yes";
+                                			}
+
+                                			//determine what the delay will be
+                                			movementDelay = random.Next(0,6);
+
+                                			dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
+
+                                			allMoves[(int)theHokeyPokeyDance.CurrentState - 2] = DONTMAKEERROR;
+                                		}
+                                		else //robot should do the correct thing
+                                		{
+                                			Console.WriteLine("Robot is correctly following the participant and putting its left leg in");
+
+                                			leftFootLastX = Convert.ToDouble(jointNamesAndData[15,2]);
+                                			previousPosition = "leftLegIn";
+
+                                			//determine what the delay will be
+                                			movementDelay = random.Next(0,2);
+
+                                			dataToSend = "leftLegIn " + movementDelay + " yes";
+                                		}
                                 	}
+
+                                	skipLogic = false;
+                                	readyToWrite = true;
                                 }
                                 else if (rightLegIn() && started)
                                 {
@@ -755,29 +878,102 @@ namespace SkeletonDataServer
                                 	{
                                 		if(rightLegShaking(rightFootLastX))
                                 		{
-                                			rightFootLastX = Convert.ToDouble(jointNamesAndData[19,2]);
-                                			previousPosition = "rightLegShake";
+                                			skipLogic = true; //then don't process the following if block
+
+                                			//leftFootLastX = Convert.ToDouble(jointNamesAndData[15,2]);
+                                			//previousPosition = "leftLegShake";
 
                                 			Console.WriteLine("Participant shook their right leg");
                                 			theHokeyPokeyDance.MoveNext(DanceMove.RLS);
                                 			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
-                                			dataToSend = "rightLegShake";
-                                			readyToWrite = true;
+                                			//now check to see if the robot should make an error here
+                                			if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR) //if it is supposed to make an error
+                                			{
+                                				Console.WriteLine("Robot is making a mistake when person is shaking their right leg");
+
+                                				//determine if the robot will move or not 0=no, 1=yes
+                                				tempRandom = random.Next(0,2);
+
+                                				if(tempRandom == 0) //no movement
+                                				{
+                                					incorrectAction = "rightLegShake";
+                                					yesOrNoMovement = "no";
+                                				}
+                                				else
+                                				{
+                                					incorrectAction = determineIncorrectMove("rightLeg");
+                                					yesOrNoMovement = "yes";
+                                				}
+
+                                				//determine what the delay will be
+                                				movementDelay = random.Next(0,6);
+
+                                				allMoves[(int)theHokeyPokeyDance.CurrentState - 2] = DONTMAKEERROR;
+
+                                				dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
+                                			}
+                                			else //robot should do the correct thing here
+                                			{
+                                				Console.WriteLine("Robot is correctly following the participant and shaking its right leg");
+
+                                				leftFootLastX = Convert.ToDouble(jointNamesAndData[19,2]);
+                                				previousPosition = "rightLegShake";
+
+                                				movementDelay = random.Next(0,2);
+
+                                				dataToSend = "rightLegShake " + movementDelay + " yes";
+                                			}	
                                 		}
                                 	}
-                                	else
+                                	
+                                	if(!skipLogic) //for just left leg in (no shake)
                                 	{
-                                		rightFootLastX = Convert.ToDouble(jointNamesAndData[19,2]);
-                                		previousPosition = "rightLegIn";
-
                                 		Console.WriteLine("Participant put their right leg in");
                                 		theHokeyPokeyDance.MoveNext(DanceMove.RLI);
                                 		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
-                                		dataToSend = "rightLegIn";
-                                		readyToWrite = true;
+                                		if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR)
+                                		{
+                                			Console.WriteLine("Robot is making a mistake when person put their right leg in");
+
+                                			//determine if the robot will move or not 0=no, 1=yes
+                                			tempRandom = random.Next(0,2);
+
+                                			if(tempRandom == 0) //no movement
+                                			{
+                                				incorrectAction = "rightLegIn";
+                                				yesOrNoMovement = "no";
+                                			}
+                                			else
+                                			{
+                                				incorrectAction = determineIncorrectMove("rightLeg");
+                                				yesOrNoMovement = "yes";
+                                			}
+
+                                			//determine what the delay will be
+                                			movementDelay = random.Next(0,6);
+
+                                			dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
+
+                                			allMoves[(int)theHokeyPokeyDance.CurrentState - 2] = DONTMAKEERROR;
+                                		}
+                                		else //robot should do the correct thing
+                                		{
+                                			Console.WriteLine("Robot is correctly following the participant and putting its right leg in");
+
+                                			leftFootLastX = Convert.ToDouble(jointNamesAndData[19,2]);
+                                			previousPosition = "rightLegIn";
+
+                                			//determine what the delay will be
+                                			movementDelay = random.Next(0,2);
+
+                                			dataToSend = "rightLegIn " + movementDelay + " yes";
+                                		}
                                 	}
+
+                                	skipLogic = false;
+                                	readyToWrite = true;
                                 }
                                 else if (leftArmIn() && started)
                                 {
@@ -785,29 +981,102 @@ namespace SkeletonDataServer
                                 	{
                                 		if(leftArmShaking(leftHandLastX))
                                 		{
-                                			leftHandLastX = Convert.ToDouble(jointNamesAndData[7,2]);
-                                			previousPosition = "leftArmShake";
+                                			skipLogic = true; //then don't process the following if block
+
+                                			//leftFootLastX = Convert.ToDouble(jointNamesAndData[15,2]);
+                                			//previousPosition = "leftLegShake";
 
                                 			Console.WriteLine("Participant shook their left arm");
                                 			theHokeyPokeyDance.MoveNext(DanceMove.LHS);
                                 			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
-                                			dataToSend = "leftArmShake";
-                                			readyToWrite = true;
+                                			//now check to see if the robot should make an error here
+                                			if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR) //if it is supposed to make an error
+                                			{
+                                				Console.WriteLine("Robot is making a mistake when person is shaking their left arm");
+
+                                				//determine if the robot will move or not 0=no, 1=yes
+                                				tempRandom = random.Next(0,2);
+
+                                				if(tempRandom == 0) //no movement
+                                				{
+                                					incorrectAction = "leftArmShake";
+                                					yesOrNoMovement = "no";
+                                				}
+                                				else
+                                				{
+                                					incorrectAction = determineIncorrectMove("leftArm");
+                                					yesOrNoMovement = "yes";
+                                				}
+
+                                				//determine what the delay will be
+                                				movementDelay = random.Next(0,6);
+
+                                				allMoves[(int)theHokeyPokeyDance.CurrentState - 2] = DONTMAKEERROR;
+
+                                				dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
+                                			}
+                                			else //robot should do the correct thing here
+                                			{
+                                				Console.WriteLine("Robot is correctly following the participant and shaking its left arm");
+
+                                				leftHandLastX = Convert.ToDouble(jointNamesAndData[7,2]);
+                                				previousPosition = "leftArmShake";
+
+                                				movementDelay = random.Next(0,2);
+
+                                				dataToSend = "leftArmShake " + movementDelay + " yes";
+                                			}	
                                 		}
                                 	}
-                                	else
+                                	
+                                	if(!skipLogic) //for just left leg in (no shake)
                                 	{
-                                		leftHandLastX = Convert.ToDouble(jointNamesAndData[7,2]);
-                                		previousPosition = "leftArmIn";
-
                                 		Console.WriteLine("Participant put their left arm in");
                                 		theHokeyPokeyDance.MoveNext(DanceMove.LHI);
                                 		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
-                                		dataToSend = "leftArmIn";
-                                		readyToWrite = true;
+                                		if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR)
+                                		{
+                                			Console.WriteLine("Robot is making a mistake when person put their left arm in");
+
+                                			//determine if the robot will move or not 0=no, 1=yes
+                                			tempRandom = random.Next(0,2);
+
+                                			if(tempRandom == 0) //no movement
+                                			{
+                                				incorrectAction = "leftArmIn";
+                                				yesOrNoMovement = "no";
+                                			}
+                                			else
+                                			{
+                                				incorrectAction = determineIncorrectMove("leftArm");
+                                				yesOrNoMovement = "yes";
+                                			}
+
+                                			//determine what the delay will be
+                                			movementDelay = random.Next(0,6);
+
+                                			dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
+
+                                			allMoves[(int)theHokeyPokeyDance.CurrentState - 2] = DONTMAKEERROR;
+                                		}
+                                		else //robot should do the correct thing
+                                		{
+                                			Console.WriteLine("Robot is correctly following the participant and putting its left arm in");
+
+                                			leftFootLastX = Convert.ToDouble(jointNamesAndData[7,2]);
+                                			previousPosition = "leftArmIn";
+
+                                			//determine what the delay will be
+                                			movementDelay = random.Next(0,2);
+
+                                			dataToSend = "leftArmIn " + movementDelay + " yes";
+                                		}
                                 	}
+
+                                	skipLogic = false;
+                                	readyToWrite = true;
                                 }
                                 else if (rightArmIn() && started)
                                 {
@@ -815,38 +1084,149 @@ namespace SkeletonDataServer
                                 	{
                                 		if(rightArmShaking(rightHandLastX))
                                 		{
-                                			rightHandLastX = Convert.ToDouble(jointNamesAndData[11,2]);
-                                			previousPosition = "rightArmShake";
+                                			skipLogic = true; //then don't process the following if block
+
+                                			//leftFootLastX = Convert.ToDouble(jointNamesAndData[15,2]);
+                                			//previousPosition = "leftLegShake";
 
                                 			Console.WriteLine("Participant shook their right arm");
                                 			theHokeyPokeyDance.MoveNext(DanceMove.RHS);
                                 			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
-                                			dataToSend = "rightArmShake";
-                                			readyToWrite = true;
+                                			//now check to see if the robot should make an error here
+                                			if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR) //if it is supposed to make an error
+                                			{
+                                				Console.WriteLine("Robot is making a mistake when person is shaking their right arm");
+
+                                				//determine if the robot will move or not 0=no, 1=yes
+                                				tempRandom = random.Next(0,2);
+
+                                				if(tempRandom == 0) //no movement
+                                				{
+                                					incorrectAction = "rightArmShake";
+                                					yesOrNoMovement = "no";
+                                				}
+                                				else
+                                				{
+                                					incorrectAction = determineIncorrectMove("rightArm");
+                                					yesOrNoMovement = "yes";
+                                				}
+
+                                				//determine what the delay will be
+                                				movementDelay = random.Next(0,6);
+
+                                				allMoves[(int)theHokeyPokeyDance.CurrentState - 2] = DONTMAKEERROR;
+
+                                				dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
+                                			}
+                                			else //robot should do the correct thing here
+                                			{
+                                				Console.WriteLine("Robot is correctly following the participant and shaking its right arm");
+
+                                				leftHandLastX = Convert.ToDouble(jointNamesAndData[11,2]);
+                                				previousPosition = "rightArmShake";
+
+                                				movementDelay = random.Next(0,2);
+
+                                				dataToSend = "rightArmShake " + movementDelay + " yes";
+                                			}	
                                 		}
                                 	}
-                                	else
+                                	
+                                	if(!skipLogic) //for just left leg in (no shake)
                                 	{
-                                		rightHandLastX = Convert.ToDouble(jointNamesAndData[11,2]);
-                                		previousPosition = "rightArmIn";
-
                                 		Console.WriteLine("Participant put their right arm in");
                                 		theHokeyPokeyDance.MoveNext(DanceMove.RHI);
                                 		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
-                                		dataToSend = "rightArmIn";
-                                		readyToWrite = true;
+                                		if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR)
+                                		{
+                                			Console.WriteLine("Robot is making a mistake when person put their right arm in");
+
+                                			//determine if the robot will move or not 0=no, 1=yes
+                                			tempRandom = random.Next(0,2);
+
+                                			if(tempRandom == 0) //no movement
+                                			{
+                                				incorrectAction = "rightArmIn";
+                                				yesOrNoMovement = "no";
+                                			}
+                                			else
+                                			{
+                                				incorrectAction = determineIncorrectMove("rightArm");
+                                				yesOrNoMovement = "yes";
+                                			}
+
+                                			//determine what the delay will be
+                                			movementDelay = random.Next(0,6);
+
+                                			dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
+
+                                			allMoves[(int)theHokeyPokeyDance.CurrentState - 2] = DONTMAKEERROR;
+                                		}
+                                		else //robot should do the correct thing
+                                		{
+                                			Console.WriteLine("Robot is correctly following the participant and putting its right arm in");
+
+                                			leftFootLastX = Convert.ToDouble(jointNamesAndData[11,2]);
+                                			previousPosition = "rightArmIn";
+
+                                			//determine what the delay will be
+                                			movementDelay = random.Next(0,2);
+
+                                			dataToSend = "rightArmIn " + movementDelay + " yes";
+                                		}
                                 	}
+
+                                	skipLogic = false;
+                                	readyToWrite = true;
                                 }
                                 else if (inDefault() && started)
                                 {
                                 	Console.WriteLine("Participant went back to default position");
                                 	theHokeyPokeyDance.MoveNext(DanceMove.DEFAULT);
                                 	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
-                                	previousPosition = "default";
 
-                                	dataToSend = "default";
+                                	//check to see if the robot is supposed to make an error
+                                	//default is a move in the hokeypokey dance which counts as [limb] out
+                                	//also have to do a check to make sure it's not the default not counted in the allMoves array
+                                	if(theHokeyPokeyDance.CurrentState < DanceState.DEFAULT_STATE_22 && allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR)
+                                	{
+                                		Console.WriteLine("Robot is making a mistake when person is going back to the default position");
+
+                                		//determine if the robot will move or not 0=no, 1=yes
+                                		tempRandom = random.Next(0,2);
+
+                                		if(tempRandom == 0) //no movement
+                                		{
+                                			incorrectAction = "default";
+                                			yesOrNoMovement = "no";
+                                		}
+                                		else
+                                		{
+                                			incorrectAction = determineIncorrectMove("default");
+                                			yesOrNoMovement = "yes";
+                                		}
+
+                                		//determine what the delay will be
+                                		movementDelay = random.Next(0,6);
+
+                                		allMoves[(int)theHokeyPokeyDance.CurrentState - 2] = DONTMAKEERROR; //don't make an error for this state again
+
+                                		dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
+                                	}
+                                	else //do the correct thing
+                                	{
+                                		Console.WriteLine("Robot is correctly following the participant and going back to the default position");
+                                		
+                                		previousPosition = "default";
+
+                                		//determine what the delay will be
+                                		movementDelay = random.Next(0,2);
+
+                                		dataToSend = "default " + movementDelay + " yes";
+                                	}
+                                	
                                 	readyToWrite = true;
                                 }
                                 else
@@ -859,13 +1239,12 @@ namespace SkeletonDataServer
                                         previousPosition = "invalid";
 
                                         dataToSend = "nothing here alright";
-                                        readyToWrite = true;
                                     }
                                     else //this represents the participant doing whatever before the interaction begins
                                     {
                                         dataToSend = "nothing here alright";
-                                        readyToWrite = true;
                                     }
+                                    readyToWrite = true;
                                 }
                             } //end of "if(connected && !dataBeingPrepped" loop
                         } //end of "if (body.IsTracked)" loop
