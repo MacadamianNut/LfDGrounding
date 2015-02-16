@@ -9,6 +9,7 @@ This is just in case the robot loses connection to the Kinect computer so that i
 
 #include <stdio.h>
 #include <iostream>
+#include <sstream>
 #include <string.h>
 #include <unistd.h>
 #include <vector>
@@ -193,8 +194,8 @@ int main()
 		LinuxActionScript::PlayMP3("connected.mp3");
 		robotwait(2.0);
         
-		std::string action, stage, isCorrectOrNot;
-		int status, index;
+		std::string action, inputDelay, yesOrNoMovement;
+		int status, index, inputDelayConverted;
 		double delay = 0.0;
 		bool skip = false, repeated = false;
 		std::string msgToClient;
@@ -233,22 +234,40 @@ int main()
 					return 0;
 				}
 
-				//std::cout << "Made if after the check" << std::endl;
+				//std::cout << "Made it after the check" << std::endl;
 
 				
 				action = tokens[0];
-				stage = tokens[1];
-				isCorrectOrNot = tokens[2];
+				//stage = tokens[1];
+				inputDelay = tokens[1];
+				yesOrNoMovement = tokens[2];
 
 				std::cout << "Action received was " << action << "." << std::endl;
 				
 				//the following actions preempt everything else (don't care about delays or anything like that)
-				if(action == "getStarted")
+				if(action == "bodyDetected")
+				{
+					LinuxActionScript::PlayMP3("welcome.mp3");
+					robotwait(15.0);
+				}
+				else if(action == "getStarted")
 				{
 					//also maybe add a little scan code
-					LinuxActionScript::PlayMP3("readyToStart.mp3");
-					robotwait(10.0);
+					//LinuxActionScript::PlayMP3("readyToStart.mp3");
+					//robotwait(10.0);
+					LinuxActionScript::PlayMP3("ready_to_begin.mp3");
+					robotwait(8.0);
 					previousState = "getStarted";
+				}
+				else if(action == "changingTwo")
+				{
+					LinuxActionScript::PlayMP3("phase2_ready.mp3");
+					robotwait(2.0);
+				}
+				else if(action == "changingThree")
+				{
+					LinuxActionScript::PlayMP3("phase3_ready.mp3");
+					robotwait(2.0);
 				}
 				else if(action == "nothing")
 				{
@@ -269,29 +288,26 @@ int main()
 				}
 				else if(action == "end") //interaction is over
 				{
-					LinuxActionScript::PlayMP3("end.mp3");
-					robotwait(5.0);
+					//LinuxActionScript::PlayMP3("end.mp3");
+					//robotwait(5.0);
+					LinuxActionScript::PlayMP3("interaction_ end.mp3");
+					robotwait(8.0);
 					exit(0);
 				}
+				
+				if(yesOrNoMovement == "yes")
+					skip = false;
+				else
+					skip = true;
 
-				if(stage == "one")
+				std::stringstream convert(inputDelay);
+				if(!(convert >> inputDelayConverted))
 				{
-					delay = 0.0; //no mimic)
-					if(isCorrectOrNot == "incorrect")
-						skip = true;
-				}
-				else if(stage == "two")
-				{
-					delay = 0.0; //a delay and the robot does the wrong thing
-					skip = false;
-				}
-				else if(stage == "three")
-				{
-					delay = 1.0; //no delay and no errors
-					skip = false;
+					std::cout << "Could not properly convert input delay to an int" << std::endl;
+					inputDelayConverted = 0;
 				}
 
-				std::cout << "Made it after determining delays" << std::endl;
+				//std::cout << "Made it after determining delays" << std::endl;
 					
 				//do the requested action
 				if(action == "hokeyPokey")
@@ -339,7 +355,7 @@ int main()
 				}
 				else if(action == "leftArmIn")
 				{
-					robotwait(delay);
+					robotwait(inputDelayConverted);
 					LinuxActionScript::PlayMP3("understood.mp3");
 					if(!skip)
 					{
@@ -368,7 +384,7 @@ int main()
 				}
 				else if(action == "leftArmShake")
 				{
-					robotwait(delay);			
+					robotwait(inputDelayConverted);			
 					LinuxActionScript::PlayMP3("understood.mp3");
 					if(!skip)
 					{
@@ -387,7 +403,7 @@ int main()
 				}
 				else if(action == "rightArmIn")
 				{
-					robotwait(delay);
+					robotwait(inputDelayConverted);
 					LinuxActionScript::PlayMP3("understood.mp3");
 					if(!skip)
 					{
@@ -416,7 +432,7 @@ int main()
 				}
 				else if(action == "rightArmShake")
 				{
-					robotwait(delay);
+					robotwait(inputDelayConverted);
 					LinuxActionScript::PlayMP3("understood.mp3");
 					if(!skip)
 					{
@@ -435,7 +451,7 @@ int main()
 				}
 				else if(action == "leftLegIn")
 				{
-					robotwait(delay);
+					robotwait(inputDelayConverted);
 					LinuxActionScript::PlayMP3("understood.mp3");
 					if(!skip)
 					{
@@ -459,7 +475,7 @@ int main()
 				}
 				else if(action == "leftLegShake")
 				{
-					robotwait(delay);
+					robotwait(inputDelayConverted);
 					LinuxActionScript::PlayMP3("understood.mp3");
 					if(!skip)
 					{
@@ -487,7 +503,7 @@ int main()
 				}
 				else if(action == "rightLegIn")
 				{
-					robotwait(delay);
+					robotwait(inputDelayConverted);
 					LinuxActionScript::PlayMP3("understood.mp3");
 					if(!skip)
 					{
@@ -511,7 +527,7 @@ int main()
 				}
 				else if(action == "rightLegShake")
 				{
-					robotwait(delay);
+					robotwait(inputDelayConverted);
 					LinuxActionScript::PlayMP3("understood.mp3");
 					if(!skip)
 					{
