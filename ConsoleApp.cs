@@ -71,6 +71,10 @@ namespace SkeletonDataServer
 
         bool robotMakeError = false;
 
+        int counter = 0;
+
+        bool welcomeFlag = false;
+
         //response from the Darwin server 
         private string response = "";
 
@@ -80,6 +84,7 @@ namespace SkeletonDataServer
         //set to true when this program has data to send to the Kinect
         private bool readyToWrite = false;
 
+        //useful to prevent multiple event handlers from trying to write to the readyToWrite variable
         private bool dataBeingPrepped = false;
 
         //25 tracked joint names in the order of the JointType enum, comma separated
@@ -127,7 +132,7 @@ namespace SkeletonDataServer
 
         //random number needed for the three test conditions
         Random random = new Random();
-        int stateCount = STAGE0PREINTERACTION, numMistakes, randomNum, tempRandom;
+        int stateCount = STAGE0PREINTERACTION, numMistakes, randomNum, tempRandomm, shakeOrNot;
 
         string[] incorrectMoveArray = {"leftArm", "rightArm", "leftLeg", "rightLeg", "default"};
 
@@ -143,6 +148,7 @@ namespace SkeletonDataServer
         {
             bool tempFlag = true;
             int choice = -1;
+            string wrongAction = "";
             while(tempFlag)
             {
                 choice = random.Next(0,5);
@@ -152,7 +158,17 @@ namespace SkeletonDataServer
                 }
             }
 
-            return incorrectMoveArray[choice]; //if there is an out of bounds error then check here
+            if(!incorrectMoveArray[choice].Equals("default"))
+            {
+            	//then we need to randomly determine if it's just going to be [limb]-in or [limb]-shake
+            	shakeOrNot = random.Next(0,2);
+            	if(shakeOrNot == 0)
+            		wrongAction = incorrectMoveArray[choice] + "In";
+            	else
+            		wrongAction = incorrectMoveArray[choice] + "Shake";
+            }
+
+           return wrongAction;
         }
 
         //variable to keep track of current stage
@@ -574,7 +590,7 @@ namespace SkeletonDataServer
                                 		Console.WriteLine("***REACHED END OF THIRD ITERATION OF DANCE. INTERACTION OVER***");
 
                                 		//then the interaction is done
-                                		dataToSend = "end its done";
+                                		dataToSend = "end 0 done";
                                 	}
                                 	else
                                 	{
@@ -582,7 +598,7 @@ namespace SkeletonDataServer
                                 		{
                                 			stage = "two";
                                 			numMistakes = random.Next(0,4) + 4; //pick randomly between 4-7 mistakes
-                                			dataToSend = "changingTwo now go";
+                                			dataToSend = "changingTwo 0 go";
 
                                 			Console.WriteLine("***STARTING SECOND ITERATION OF DANCE***");
                                 		}
@@ -590,7 +606,7 @@ namespace SkeletonDataServer
                                 		{
                                 			stage = "three";
                                 			numMistakes = random.Next(0,4); 	//pick randomly between 0-3 mistakes
-                                			dataToSend = "changingThree now go";
+                                			dataToSend = "changingThree 0 go";
 
                                 			Console.WriteLine("***STARTING THIRD ITERATION OF DANCE***");
                                 		}
@@ -652,7 +668,7 @@ namespace SkeletonDataServer
                                 		}
                                 	}
 
-                                	dataToSend = "getStarted 0 yes";
+                                	dataToSend = "getStarted 0 go";
                                     readyToWrite = true;
                                 }
                                 else if (bothHandsIn() && started)
@@ -1239,12 +1255,22 @@ namespace SkeletonDataServer
                                         previousPosition = "invalid";
 
                                         dataToSend = "nothing here alright";
+
                                     }
                                     else //this represents the participant doing whatever before the interaction begins
                                     {
-                                        dataToSend = "nothing here alright";
+                                    	counter++;
+
+                                    	if(counter > 60 && !welcomeFlag) //guessing the the Kinect captures at roughly 15fps so wait 4 seconds
+ 										{	
+ 											welcomeFlag = true;
+ 											dataToSend = "bodyDetected 0 go";
+ 										}
+ 										else
+                                        	dataToSend = "nothing here alright";
                                     }
-                                    readyToWrite = true;
+
+                                   	readyToWrite = true;
                                 }
                             } //end of "if(connected && !dataBeingPrepped" loop
                         } //end of "if (body.IsTracked)" loop
