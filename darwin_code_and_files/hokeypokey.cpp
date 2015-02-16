@@ -248,7 +248,7 @@ int main()
 				if(action == "bodyDetected")
 				{
 					LinuxActionScript::PlayMP3("welcome.mp3");
-					robotwait(15.0);
+					robotwait(16.0);
 				}
 				else if(action == "getStarted")
 				{
@@ -256,18 +256,18 @@ int main()
 					//LinuxActionScript::PlayMP3("readyToStart.mp3");
 					//robotwait(10.0);
 					LinuxActionScript::PlayMP3("ready_to_begin.mp3");
-					robotwait(8.0);
+					robotwait(9.0);
 					previousState = "getStarted";
 				}
 				else if(action == "changingTwo")
 				{
 					LinuxActionScript::PlayMP3("phase2_ready.mp3");
-					robotwait(2.0);
+					robotwait(3.0);
 				}
 				else if(action == "changingThree")
 				{
 					LinuxActionScript::PlayMP3("phase3_ready.mp3");
-					robotwait(2.0);
+					robotwait(3.0);
 				}
 				else if(action == "nothing")
 				{
@@ -284,14 +284,13 @@ int main()
 					defaultposition();
 					previousState = "default";
 					robotwait(1.0);
-					exit(0);
 				}
 				else if(action == "end") //interaction is over
 				{
 					//LinuxActionScript::PlayMP3("end.mp3");
 					//robotwait(5.0);
 					LinuxActionScript::PlayMP3("interaction_ end.mp3");
-					robotwait(8.0);
+					robotwait(9.0);
 					exit(0);
 				}
 				
