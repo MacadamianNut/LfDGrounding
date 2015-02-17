@@ -713,6 +713,8 @@ namespace SkeletonDataServer
                                 		Console.WriteLine("Robot is making a mistake when person is doing hokeypokey");
                                 		file.WriteLine("Robot is making a mistake when person is doing hokeypokey. Time: " + getTimeStamp(DateTime.Now));
 
+                                		previousPosition = "error";
+
                                 		//determine if the robot will move or not 0=no, 1=yes
                                 		tempRandom = random.Next(0,2);
 
@@ -806,9 +808,18 @@ namespace SkeletonDataServer
                                 }
                                 else if (leftLegIn() && started)
                                 {
-                                	if(previousPosition.Equals("leftLegIn") || previousPosition.Equals("leftLegShake"))
+                                	if(previousPosition.Equals("leftLegIn") || previousPosition.Equals("leftLegShake") || previousPosition.Equals("error"))
                                 	{
-                                		if(leftLegShaking(leftFootLastX))
+                                		if(previousPosition.Equals("error") && leftLegShaking(leftFootLastX))
+                                		{
+                                			//then the person made a mistake in the case where they shook their leg when they weren't supposed to
+                                			Console.WriteLine("Participant ***erroneously*** shook their left leg");
+                                			file.WriteLine("Participant ***erroneously*** shook their left leg. Time: " + getTimeStamp(DateTime.Now));
+                                		
+                                			//the rest of this loop will treat it as leftLegIn (since skipLogic is not updated)
+                                			//however the log file will also record this move as an error
+                                		}
+                                		else if(leftLegShaking(leftFootLastX))
                                 		{
                                 			skipLogic = true; //then don't process the following if block
 
@@ -827,6 +838,8 @@ namespace SkeletonDataServer
                                 			{
                                 				Console.WriteLine("Robot is making a mistake when person is shaking their left leg");
                                 				file.WriteLine("Robot is making a mistake when person is shaking their left leg. Time: " + getTimeStamp(DateTime.Now));
+
+                                				previousPosition = "error";
 
                                 				//determine if the robot will move or not 0=no, 1=yes
                                 				tempRandom = random.Next(0,2);
@@ -878,6 +891,8 @@ namespace SkeletonDataServer
                                 			Console.WriteLine("Robot is making a mistake when person put their left leg in");
                                 			file.WriteLine("Robot is making a mistake when person put their left leg in. Time: " + getTimeStamp(DateTime.Now));
 
+                                			previousPosition = "error";
+
                                 			//determine if the robot will move or not 0=no, 1=yes
                                 			tempRandom = random.Next(0,2);
 
@@ -919,9 +934,18 @@ namespace SkeletonDataServer
                                 }
                                 else if (rightLegIn() && started)
                                 {
-                                	if(previousPosition.Equals("rightLegIn") || previousPosition.Equals("rightLegShake"))
+                                	if(previousPosition.Equals("rightLegIn") || previousPosition.Equals("rightLegShake") || previousPosition.Equals("error"))
                                 	{
-                                		if(rightLegShaking(rightFootLastX))
+                                		if(previousPosition.Equals("error") && rightLegShaking(rightFootLastX))
+                                		{
+                                			//then the person made a mistake in the case where they shook their leg when they weren't supposed to
+                                			Console.WriteLine("Participant ***erroneously*** shook their right leg");
+                                			file.WriteLine("Participant ***erroneously*** shook their right leg. Time: " + getTimeStamp(DateTime.Now));
+                                		
+                                			//the rest of this loop will treat it as rightLegIn (since skipLogic is not updated)
+                                			//however the log file will also record this move as an error
+                                		}
+                                		else if(rightLegShaking(rightFootLastX))
                                 		{
                                 			skipLogic = true; //then don't process the following if block
 
@@ -940,6 +964,8 @@ namespace SkeletonDataServer
                                 			{
                                 				Console.WriteLine("Robot is making a mistake when person is shaking their right leg");
                                 				file.WriteLine("Robot is making a mistake when person is shaking their right leg. Time: " + getTimeStamp(DateTime.Now));
+
+                                				previousPosition = "error";
 
                                 				//determine if the robot will move or not 0=no, 1=yes
                                 				tempRandom = random.Next(0,2);
@@ -991,6 +1017,8 @@ namespace SkeletonDataServer
                                 			Console.WriteLine("Robot is making a mistake when person put their right leg in");
                                 			file.WriteLine("Robot is making a mistake when person put their right leg in. Time: " + getTimeStamp(DateTime.Now));
 
+                                			previousPosition = "error";
+
                                 			//determine if the robot will move or not 0=no, 1=yes
                                 			tempRandom = random.Next(0,2);
 
@@ -1032,9 +1060,18 @@ namespace SkeletonDataServer
                                 }
                                 else if (leftArmIn() && started)
                                 {
-                                	if(previousPosition.Equals("leftArmIn") || previousPosition.Equals("leftArmShake"))
+                                	if(previousPosition.Equals("leftArmIn") || previousPosition.Equals("leftArmShake") || previousPosition.Equals("error"))
                                 	{
-                                		if(leftArmShaking(leftHandLastX))
+                                		if(previousPosition.Equals("error") && leftArmShaking(leftHandLastX))
+                                		{
+                                			//then the person made a mistake in the case where they shook their arm when they weren't supposed to
+                                			Console.WriteLine("Participant ***erroneously*** shook their left arm");
+                                			file.WriteLine("Participant ***erroneously*** shook their left arm. Time: " + getTimeStamp(DateTime.Now));
+                                		
+                                			//the rest of this loop will treat it as leftArmIn (since skipLogic is not updated)
+                                			//however the log file will also record this move as an error
+                                		}
+                                		else if(leftArmShaking(leftHandLastX))
                                 		{
                                 			skipLogic = true; //then don't process the following if block
 
@@ -1053,6 +1090,8 @@ namespace SkeletonDataServer
                                 			{
                                 				Console.WriteLine("Robot is making a mistake when person is shaking their left arm");
                                 				file.WriteLine("Robot is making a mistake when person is shaking their left arm. Time: " + getTimeStamp(DateTime.Now));
+
+                                				previousPosition = "error";
 
                                 				//determine if the robot will move or not 0=no, 1=yes
                                 				tempRandom = random.Next(0,2);
@@ -1101,6 +1140,8 @@ namespace SkeletonDataServer
                                 			Console.WriteLine("Robot is making a mistake when person put their left arm in");
                                 			file.WriteLine("Robot is making a mistake when person put their left arm in. Time: " + getTimeStamp(DateTime.Now));
 
+                                			previousPosition = "error";
+
                                 			//determine if the robot will move or not 0=no, 1=yes
                                 			tempRandom = random.Next(0,2);
 
@@ -1144,6 +1185,15 @@ namespace SkeletonDataServer
                                 {
                                 	if(previousPosition.Equals("rightArmIn") || previousPosition.Equals("rightArmShake"))
                                 	{
+                                		if(previousPosition.Equals("error") && rightArmShaking(rightHandLastX))
+                                		{
+                                			//then the person made a mistake in the case where they shook their arm when they weren't supposed to
+                                			Console.WriteLine("Participant ***erroneously*** shook their right arm");
+                                			file.WriteLine("Participant ***erroneously*** shook their right arm. Time: " + getTimeStamp(DateTime.Now));
+                                		
+                                			//the rest of this loop will treat it as rightArmIn (since skipLogic is not updated)
+                                			//however the log file will also record this move as an error
+                                		}
                                 		if(rightArmShaking(rightHandLastX))
                                 		{
                                 			skipLogic = true; //then don't process the following if block
@@ -1163,6 +1213,8 @@ namespace SkeletonDataServer
                                 			{
                                 				Console.WriteLine("Robot is making a mistake when person is shaking their right arm");
                                 				file.WriteLine("Robot is making a mistake when person is shaking their right arm. Time: " + getTimeStamp(DateTime.Now));
+
+                                				previousPosition = "error";
 
                                 				//determine if the robot will move or not 0=no, 1=yes
                                 				tempRandom = random.Next(0,2);
@@ -1213,6 +1265,8 @@ namespace SkeletonDataServer
                                 		{
                                 			Console.WriteLine("Robot is making a mistake when person put their right arm in");
                                 			file.WriteLine("Robot is making a mistake when person put their right arm in. Time: " + getTimeStamp(DateTime.Now));
+
+                                			previousPosition = "error";
 
                                 			//determine if the robot will move or not 0=no, 1=yes
                                 			tempRandom = random.Next(0,2);
@@ -1271,6 +1325,8 @@ namespace SkeletonDataServer
                                         {
                                             Console.WriteLine("Robot is making a mistake when person went to the default position");
                                             file.WriteLine("Robot is making a mistake when person went to the default position. Time: " + getTimeStamp(DateTime.Now));
+
+                                            previousPosition = "error";
 
                                             //determine if the robot will move or not 0=no, 1=yes
                                             tempRandom = random.Next(0, 2);
