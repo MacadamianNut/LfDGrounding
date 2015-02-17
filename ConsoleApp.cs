@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using System.IO;
 using Microsoft.Kinect;
 
 namespace SkeletonDataServer
@@ -20,7 +21,7 @@ namespace SkeletonDataServer
 		//change this variable for each subject
 		public static string subjectNum = "1";
 
-        public static string ipaddress = "10.11.133.65";
+        public static string ipaddress = "10.11.129.197";
 
 		//to be used in the output file transcribing the events during the interaction
 		public string timeStamp = "";
@@ -35,7 +36,9 @@ namespace SkeletonDataServer
         }
 
         //output file for a specific subject
-        public string filename = @"C:\Users\rhclab\Desktop\Subject_" + subjectNum +  "_Time_" + getTimeStamp(DateTime.Now) + ".txt";
+        static string filename = @"C:\Users\rhclab\Desktop\Subject_" + subjectNum +  ".txt";
+
+        StreamWriter file = new StreamWriter(filename, true);
 
         /*Symbolic constants for robot within allMoves array (array that will be declared later
         that keeps track of when a robot should make a mistake during the dance)*/
@@ -68,8 +71,6 @@ namespace SkeletonDataServer
 
         //the message that is sent to the Darwin server (a string with two words separated by a space)
         private string dataToSend = "";
-
-        bool robotMakeError = false;
 
         int counter = 0;
 
@@ -132,7 +133,7 @@ namespace SkeletonDataServer
 
         //random number needed for the three test conditions
         Random random = new Random();
-        int stateCount = STAGE0PREINTERACTION, numMistakes, randomNum, tempRandomm, shakeOrNot;
+        int stateCount = STAGE0PREINTERACTION, numMistakes, randomNum, tempRandom, shakeOrNot;
 
         string[] incorrectMoveArray = {"leftArm", "rightArm", "leftLeg", "rightLeg", "default"};
 
@@ -423,6 +424,7 @@ namespace SkeletonDataServer
                             //this stuff is shown once
                             Console.WriteLine("Entered while loop for interaction with the server");
                             Console.WriteLine("\tJust started. Current state = " + theHokeyPokeyDance.CurrentState);
+                            file.WriteLine("Just started. Current state = " + theHokeyPokeyDance + ". Time: " + getTimeStamp(DateTime.Now));
                             flag = false;
                         }
 
@@ -441,21 +443,24 @@ namespace SkeletonDataServer
                                     byte[] outStream = System.Text.Encoding.ASCII.GetBytes(dataToSend);
                                     clientSocket.Send(Encoding.ASCII.GetBytes(dataToSend));
                                     Console.WriteLine("Sent data: " + dataToSend);
+                                    file.WriteLine("Sent the following to robot: " + dataToSend + ". Time: " + getTimeStamp(DateTime.Now));
 
                                     byte[] bytes = new byte[256];
                                     int i = clientSocket.Receive(bytes); //Cory note: may need to change this code to actually make sure we recieved a message
                                     response = Encoding.UTF8.GetString(bytes);
                                     Console.WriteLine("Received data: " + response);
+                                    file.WriteLine("Robot completed action and sent response. Time: " + getTimeStamp(DateTime.Now));
+                                    file.Flush();
                                 }
                         
                                 processing = false; //now future event handlers can start processing again
                                 readyToWrite = false;
                                 dataBeingPrepped = false;
-                                //Console.WriteLine("Processing has ended");
                             }
                             //Console.WriteLine("Exiting locked section of code");
                         }
       			   }
+      			   file.Close();
       			   connected = false;
       			   Console.WriteLine("Disconnected from Darwin.");
       		    } catch(Exception e)
@@ -588,6 +593,7 @@ namespace SkeletonDataServer
                                 		started = false;
 
                                 		Console.WriteLine("***REACHED END OF THIRD ITERATION OF DANCE. INTERACTION OVER***");
+                                		file.WriteLine("***Interaction ending. Time: " + getTimeStamp(DateTime.Now));
 
                                 		//then the interaction is done
                                 		dataToSend = "end 0 done";
@@ -601,6 +607,7 @@ namespace SkeletonDataServer
                                 			dataToSend = "changingTwo 0 go";
 
                                 			Console.WriteLine("***STARTING SECOND ITERATION OF DANCE***");
+                                			file.WriteLine("***Starting second iteration of dance. Time: " + getTimeStamp(DateTime.Now));
                                 		}
                                 		else if(stateCount == STAGE3NONEISHMISTAKES)
                                 		{
@@ -609,6 +616,7 @@ namespace SkeletonDataServer
                                 			dataToSend = "changingThree 0 go";
 
                                 			Console.WriteLine("***STARTING THIRD ITERATION OF DANCE***");
+                                			file.WriteLine("***Starting third iteration of dance. Time: " + getTimeStamp(DateTime.Now));
                                 		}
                                 	}
 
@@ -645,6 +653,9 @@ namespace SkeletonDataServer
                                 	theHokeyPokeyDance.MoveNext(DanceMove.BHO);
                                 	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
+                                	file.WriteLine("***Participant initiated interaction. Time: " + getTimeStamp(DateTime.Now));
+                                	file.WriteLine("\tCurrent dance state = " + theHokeyPokeyDance.CurrentState);
+
                                 	stateCount = STAGE1MANYMISTAKES;
                                 	stage = "one";
 
@@ -678,6 +689,9 @@ namespace SkeletonDataServer
                                 	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
                                 	previousPosition = "bothHandsIn";
 
+                                	file.WriteLine("Participant stuck both hands forward, an invalid move. Time: " + getTimeStamp(DateTime.Now));
+                                	file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
                                 	dataToSend = "nothing here alright";
                                 	readyToWrite = true;
                                 }
@@ -688,12 +702,16 @@ namespace SkeletonDataServer
                                 	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
                                 	//previousPosition = "hokeyPokey";
 
+                                	file.WriteLine("Participant did the hokey pokey. Time: " + getTimeStamp(DateTime.Now));
+                                	file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
                                 	//check to see if the robot is supposed to make a mistake
                                 	//also have to watch out for an out of bounds exception since the non-sequential hokey pokey state
                                 	//is not considered part of the dance and therefore not included in the allMoves array
                                 	if(((int)theHokeyPokeyDance.CurrentState <= (int)DanceState.HOKEY_POKEY_21) && allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR) //if it is supposed to make an error
                                 	{
                                 		Console.WriteLine("Robot is making a mistake when person is doing hokeypokey");
+                                		file.WriteLine("Robot is making a mistake when person is doing hokeypokey. Time: " + getTimeStamp(DateTime.Now));
 
                                 		//determine if the robot will move or not 0=no, 1=yes
                                 		tempRandom = random.Next(0,2);
@@ -720,6 +738,7 @@ namespace SkeletonDataServer
                                 	else //then do things normally
                                 	{
                                 		Console.WriteLine("Robot is correctly following the person and doing the hokeypokey");
+                                		file.WriteLine("Robot is correctly following the person and doing the hokeypokey. Time: " + getTimeStamp(DateTime.Now));
 
                                 		//Cory note: I could be wrong, but you only want to update the previous
                                 		//position when the robot does the correct thing
@@ -800,10 +819,14 @@ namespace SkeletonDataServer
                                 			theHokeyPokeyDance.MoveNext(DanceMove.LLS);
                                 			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
+                                			file.WriteLine("Participant shook their left leg. Time: " + getTimeStamp(DateTime.Now));
+                                			file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
                                 			//now check to see if the robot should make an error here
                                 			if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR) //if it is supposed to make an error
                                 			{
                                 				Console.WriteLine("Robot is making a mistake when person is shaking their left leg");
+                                				file.WriteLine("Robot is making a mistake when person is shaking their left leg. Time: " + getTimeStamp(DateTime.Now));
 
                                 				//determine if the robot will move or not 0=no, 1=yes
                                 				tempRandom = random.Next(0,2);
@@ -829,6 +852,7 @@ namespace SkeletonDataServer
                                 			else //robot should do the correct thing here
                                 			{
                                 				Console.WriteLine("Robot is correctly following the participant and shaking its left leg");
+                                				file.WriteLine("Robot is correctly following the participant and shaking its left leg. Time: " + getTimeStamp(DateTime.Now));
 
                                 				leftFootLastX = Convert.ToDouble(jointNamesAndData[15,2]);
                                 				previousPosition = "leftLegShake";
@@ -846,9 +870,13 @@ namespace SkeletonDataServer
                                 		theHokeyPokeyDance.MoveNext(DanceMove.LLI);
                                 		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
+                                		file.WriteLine("Participant put their left leg in. Time: " + getTimeStamp(DateTime.Now));
+                                		file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
                                 		if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR)
                                 		{
                                 			Console.WriteLine("Robot is making a mistake when person put their left leg in");
+                                			file.WriteLine("Robot is making a mistake when person put their left leg in. Time: " + getTimeStamp(DateTime.Now));
 
                                 			//determine if the robot will move or not 0=no, 1=yes
                                 			tempRandom = random.Next(0,2);
@@ -874,6 +902,7 @@ namespace SkeletonDataServer
                                 		else //robot should do the correct thing
                                 		{
                                 			Console.WriteLine("Robot is correctly following the participant and putting its left leg in");
+                                			file.WriteLine("Robot is correctly following the participant and putting its left leg in. Time: " + getTimeStamp(DateTime.Now));
 
                                 			leftFootLastX = Convert.ToDouble(jointNamesAndData[15,2]);
                                 			previousPosition = "leftLegIn";
@@ -903,10 +932,14 @@ namespace SkeletonDataServer
                                 			theHokeyPokeyDance.MoveNext(DanceMove.RLS);
                                 			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
+                                			file.WriteLine("Participant shook their right leg. Time: " + getTimeStamp(DateTime.Now));
+                                			file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
                                 			//now check to see if the robot should make an error here
                                 			if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR) //if it is supposed to make an error
                                 			{
                                 				Console.WriteLine("Robot is making a mistake when person is shaking their right leg");
+                                				file.WriteLine("Robot is making a mistake when person is shaking their right leg. Time: " + getTimeStamp(DateTime.Now));
 
                                 				//determine if the robot will move or not 0=no, 1=yes
                                 				tempRandom = random.Next(0,2);
@@ -932,6 +965,7 @@ namespace SkeletonDataServer
                                 			else //robot should do the correct thing here
                                 			{
                                 				Console.WriteLine("Robot is correctly following the participant and shaking its right leg");
+                                				file.WriteLine("Robot is correctly following the participant and shaking its right leg. Time: " + getTimeStamp(DateTime.Now));
 
                                 				leftFootLastX = Convert.ToDouble(jointNamesAndData[19,2]);
                                 				previousPosition = "rightLegShake";
@@ -949,9 +983,13 @@ namespace SkeletonDataServer
                                 		theHokeyPokeyDance.MoveNext(DanceMove.RLI);
                                 		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
+                                		file.WriteLine("Participant put their right leg in. Time: " + getTimeStamp(DateTime.Now));
+                                		file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
                                 		if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR)
                                 		{
                                 			Console.WriteLine("Robot is making a mistake when person put their right leg in");
+                                			file.WriteLine("Robot is making a mistake when person put their right leg in. Time: " + getTimeStamp(DateTime.Now));
 
                                 			//determine if the robot will move or not 0=no, 1=yes
                                 			tempRandom = random.Next(0,2);
@@ -977,6 +1015,7 @@ namespace SkeletonDataServer
                                 		else //robot should do the correct thing
                                 		{
                                 			Console.WriteLine("Robot is correctly following the participant and putting its right leg in");
+                                			file.WriteLine("Robot is correctly following the participant and putting its right leg in. Time: " + getTimeStamp(DateTime.Now));
 
                                 			leftFootLastX = Convert.ToDouble(jointNamesAndData[19,2]);
                                 			previousPosition = "rightLegIn";
@@ -1006,10 +1045,14 @@ namespace SkeletonDataServer
                                 			theHokeyPokeyDance.MoveNext(DanceMove.LHS);
                                 			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
+                                			file.WriteLine("Participant shook their left arm. Time: " + getTimeStamp(DateTime.Now));
+                                			file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
                                 			//now check to see if the robot should make an error here
                                 			if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR) //if it is supposed to make an error
                                 			{
                                 				Console.WriteLine("Robot is making a mistake when person is shaking their left arm");
+                                				file.WriteLine("Robot is making a mistake when person is shaking their left arm. Time: " + getTimeStamp(DateTime.Now));
 
                                 				//determine if the robot will move or not 0=no, 1=yes
                                 				tempRandom = random.Next(0,2);
@@ -1035,6 +1078,7 @@ namespace SkeletonDataServer
                                 			else //robot should do the correct thing here
                                 			{
                                 				Console.WriteLine("Robot is correctly following the participant and shaking its left arm");
+                                				file.WriteLine("Robot is correctly following the participant and shaking its left arm. Time: " + getTimeStamp(DateTime.Now));
 
                                 				leftHandLastX = Convert.ToDouble(jointNamesAndData[7,2]);
                                 				previousPosition = "leftArmShake";
@@ -1055,6 +1099,7 @@ namespace SkeletonDataServer
                                 		if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR)
                                 		{
                                 			Console.WriteLine("Robot is making a mistake when person put their left arm in");
+                                			file.WriteLine("Robot is making a mistake when person put their left arm in. Time: " + getTimeStamp(DateTime.Now));
 
                                 			//determine if the robot will move or not 0=no, 1=yes
                                 			tempRandom = random.Next(0,2);
@@ -1080,6 +1125,7 @@ namespace SkeletonDataServer
                                 		else //robot should do the correct thing
                                 		{
                                 			Console.WriteLine("Robot is correctly following the participant and putting its left arm in");
+                                			file.WriteLine("Robot is correctly following the participant and putting its left arm in. Time: " + getTimeStamp(DateTime.Now));
 
                                 			leftFootLastX = Convert.ToDouble(jointNamesAndData[7,2]);
                                 			previousPosition = "leftArmIn";
@@ -1109,10 +1155,14 @@ namespace SkeletonDataServer
                                 			theHokeyPokeyDance.MoveNext(DanceMove.RHS);
                                 			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
+                                			file.WriteLine("Participant shook their right arm. Time: " + getTimeStamp(DateTime.Now));
+                                			file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
                                 			//now check to see if the robot should make an error here
                                 			if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR) //if it is supposed to make an error
                                 			{
                                 				Console.WriteLine("Robot is making a mistake when person is shaking their right arm");
+                                				file.WriteLine("Robot is making a mistake when person is shaking their right arm. Time: " + getTimeStamp(DateTime.Now));
 
                                 				//determine if the robot will move or not 0=no, 1=yes
                                 				tempRandom = random.Next(0,2);
@@ -1138,6 +1188,7 @@ namespace SkeletonDataServer
                                 			else //robot should do the correct thing here
                                 			{
                                 				Console.WriteLine("Robot is correctly following the participant and shaking its right arm");
+                                				file.WriteLine("Robot is correctly following the participant and shaking its right arm. Time: " + getTimeStamp(DateTime.Now));
 
                                 				leftHandLastX = Convert.ToDouble(jointNamesAndData[11,2]);
                                 				previousPosition = "rightArmShake";
@@ -1155,9 +1206,13 @@ namespace SkeletonDataServer
                                 		theHokeyPokeyDance.MoveNext(DanceMove.RHI);
                                 		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
+                                		file.WriteLine("Participant put their right arm in. Time: " + getTimeStamp(DateTime.Now));
+                                		file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
                                 		if(allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR)
                                 		{
                                 			Console.WriteLine("Robot is making a mistake when person put their right arm in");
+                                			file.WriteLine("Robot is making a mistake when person put their right arm in. Time: " + getTimeStamp(DateTime.Now));
 
                                 			//determine if the robot will move or not 0=no, 1=yes
                                 			tempRandom = random.Next(0,2);
@@ -1183,6 +1238,7 @@ namespace SkeletonDataServer
                                 		else //robot should do the correct thing
                                 		{
                                 			Console.WriteLine("Robot is correctly following the participant and putting its right arm in");
+                                			file.WriteLine("Robot is correctly following the participant and putting its right arm in. Time: " + getTimeStamp(DateTime.Now));
 
                                 			leftFootLastX = Convert.ToDouble(jointNamesAndData[11,2]);
                                 			previousPosition = "rightArmIn";
@@ -1199,49 +1255,61 @@ namespace SkeletonDataServer
                                 }
                                 else if (inDefault() && started)
                                 {
-                                	Console.WriteLine("Participant went back to default position");
-                                	theHokeyPokeyDance.MoveNext(DanceMove.DEFAULT);
-                                	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                                    if (!previousPosition.Equals("default")) //doing this to avoid multiple "Ok I got it" from the robot when the participant isn't doing anything
+                                    {
+                                        Console.WriteLine("Participant went to default position");
+                                        theHokeyPokeyDance.MoveNext(DanceMove.DEFAULT);
+                                        Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
-                                	//check to see if the robot is supposed to make an error
-                                	//default is a move in the hokeypokey dance which counts as [limb] out
-                                	//also have to do a check to make sure it's not the default not counted in the allMoves array
-                                	if(theHokeyPokeyDance.CurrentState < DanceState.DEFAULT_STATE_22 && allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR)
-                                	{
-                                		Console.WriteLine("Robot is making a mistake when person is going back to the default position");
+                                        file.WriteLine("Participant went to default position. Time: " + getTimeStamp(DateTime.Now));
+                                        file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
-                                		//determine if the robot will move or not 0=no, 1=yes
-                                		tempRandom = random.Next(0,2);
+                                        //check to see if the robot is supposed to make an error
+                                        //default is a move in the hokeypokey dance which counts as [limb] out
+                                        //also have to do a check to make sure it's not the default not counted in the allMoves array
+                                        if (theHokeyPokeyDance.CurrentState < DanceState.DEFAULT_STATE_22 && allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR)
+                                        {
+                                            Console.WriteLine("Robot is making a mistake when person went to the default position");
+                                            file.WriteLine("Robot is making a mistake when person went to the default position. Time: " + getTimeStamp(DateTime.Now));
 
-                                		if(tempRandom == 0) //no movement
-                                		{
-                                			incorrectAction = "default";
-                                			yesOrNoMovement = "no";
-                                		}
-                                		else
-                                		{
-                                			incorrectAction = determineIncorrectMove("default");
-                                			yesOrNoMovement = "yes";
-                                		}
+                                            //determine if the robot will move or not 0=no, 1=yes
+                                            tempRandom = random.Next(0, 2);
 
-                                		//determine what the delay will be
-                                		movementDelay = random.Next(0,6);
+                                            if (tempRandom == 0) //no movement
+                                            {
+                                                incorrectAction = "default";
+                                                yesOrNoMovement = "no";
+                                            }
+                                            else
+                                            {
+                                                incorrectAction = determineIncorrectMove("default");
+                                                yesOrNoMovement = "yes";
+                                            }
 
-                                		allMoves[(int)theHokeyPokeyDance.CurrentState - 2] = DONTMAKEERROR; //don't make an error for this state again
+                                            //determine what the delay will be
+                                            movementDelay = random.Next(0, 6);
 
-                                		dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
-                                	}
-                                	else //do the correct thing
-                                	{
-                                		Console.WriteLine("Robot is correctly following the participant and going back to the default position");
-                                		
-                                		previousPosition = "default";
+                                            allMoves[(int)theHokeyPokeyDance.CurrentState - 2] = DONTMAKEERROR; //don't make an error for this state again
 
-                                		//determine what the delay will be
-                                		movementDelay = random.Next(0,2);
+                                            dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
+                                        }
+                                        else //do the correct thing
+                                        {
+                                            Console.WriteLine("Robot is correctly following the participant and going back to the default position");
+                                            file.WriteLine("Robot is correctly following the participant and going back to the default position. Time: " + getTimeStamp(DateTime.Now));
 
-                                		dataToSend = "default " + movementDelay + " yes";
-                                	}
+                                            previousPosition = "default";
+
+                                            //determine what the delay will be
+                                            movementDelay = random.Next(0, 2);
+
+                                            dataToSend = "default " + movementDelay + " yes";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        dataToSend = "nothing here alright";
+                                    }
                                 	
                                 	readyToWrite = true;
                                 }
@@ -1249,12 +1317,19 @@ namespace SkeletonDataServer
                                 {
                                     if (started) //participant did some invalid move after the interaction started
                                     {
-                                        Console.WriteLine("Participant did some invalid move");
-                                        theHokeyPokeyDance.MoveNext(DanceMove.INVALID);
-                                        Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
-                                        previousPosition = "invalid";
+                                        if(!previousPosition.Equals("invalid"))
+                                        {
+                                            Console.WriteLine("Participant did some invalid move");
+                                            theHokeyPokeyDance.MoveNext(DanceMove.INVALID);
+                                            Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                                            previousPosition = "invalid";
 
-                                        dataToSend = "nothing here alright";
+                                            file.WriteLine("Participant did some invalid move");
+                                            file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+                                            file.Flush();
+
+                                            dataToSend = "nothing here alright";
+                                        }
 
                                     }
                                     else //this represents the participant doing whatever before the interaction begins
