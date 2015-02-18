@@ -196,7 +196,7 @@ int main()
         
 		std::string action, inputDelay, yesOrNoMovement;
 		int status, index, inputDelayConverted;
-		double delay = 0.0;
+		//double delay = 0.0;
 		bool skip = false, repeated = false;
 		std::string msgToClient;
 		
