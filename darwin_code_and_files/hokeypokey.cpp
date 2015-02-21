@@ -9,6 +9,8 @@ This is just in case the robot loses connection to the Kinect computer so that i
 
 #include <stdio.h>
 #include <iostream>
+#include <cstdlib>
+#include <time.h>
 #include <sstream>
 #include <string.h>
 #include <unistd.h>
@@ -44,7 +46,8 @@ void handsupbacktodefault();
 void bendforward();
 void bendforwardbacktodefault();
 void doHokeyPokey();
-//void scan();
+std::string chooseUnderstoodMsg();
+std::string chooseContinueMsg();
 
 //motor 19 scan
 //looking left: 
@@ -109,9 +112,15 @@ int handsleftArray[] = {-1,-1,1712,2358,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-
 
 int handsrightArray[] = {-1,-1,1439,2479,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
 
+std::string understoodResponses[] = {"understood.mp3", "okay.mp3", "alright.mp3"};
+std::string continueResponses[] = {"continue.mp3", "please_continue.mp3", "next_step.mp3"};
+std::string chosen = "";
+
+bool skipContinueMessage = false;
+
 std::vector<std::string> stringSplit(std::string);
 
-std::string delimeter = " ";
+std::string delimeter = " "; //space delimeter
 
 //Initialize framework
 LinuxCM730 linux_cm730("/dev/ttyUSB0");
@@ -132,6 +141,7 @@ int main()
 	}
     
     int value;
+    std::srand(time(NULL));
     
 	for(int id=JointData::ID_R_SHOULDER_PITCH; id<JointData::NUMBER_OF_JOINTS; id++)
 	{
@@ -141,7 +151,7 @@ int main()
 	
 		if(cm730.ReadWord(id, MX28::P_PRESENT_POSITION_L, &value, 0) != CM730::SUCCESS)
 		{
-			printf("Problem. Terminating program\n");
+			printf("Problem. Terminating program.\n");
 			return 0;
 		}
 	}
@@ -180,7 +190,7 @@ int main()
 	hokeyPokey - robot raises both arms up and shakes them back and forth*/
 
 	//the message the Darwin sends to the Kinect will always be "ready". This lets the program know the Darwin is done doing its stuff
-	std::string messageToKinect = "ready";
+	std::string messageToKinect = "";
 	
 	while(true)
 	{
@@ -198,7 +208,6 @@ int main()
 		int status, index, inputDelayConverted;
 		//double delay = 0.0;
 		bool skip = false, repeated = false;
-		std::string msgToClient;
 		
 		do{
 			status = recv(clientSock, receivedStr, 1000, 0);
@@ -243,12 +252,17 @@ int main()
 				yesOrNoMovement = tokens[2];
 
 				std::cout << "Action received was " << action << "." << std::endl;
+
+				//add a slight delay so that the robot doesn't respond too quickly
+				robotwait(0.75);
 				
 				//the following actions preempt everything else (don't care about delays or anything like that)
 				if(action == "bodyDetected")
 				{
 					LinuxActionScript::PlayMP3("welcome.mp3");
 					robotwait(16.0);
+					messageToKinect = "Robot played welcome.mp3 to acknowledge that a body was detected.";
+					skipContinueMessage = true;
 				}
 				else if(action == "getStarted")
 				{
@@ -258,26 +272,32 @@ int main()
 					LinuxActionScript::PlayMP3("ready_to_begin.mp3");
 					robotwait(9.0);
 					previousState = "getStarted";
+					messageToKinect = "Robot played ready_to_begin.mp3 to acknowledge start.";
+					skipContinueMessage = true;
 				}
 				else if(action == "changingTwo")
 				{
 					LinuxActionScript::PlayMP3("phase2_ready.mp3");
 					robotwait(3.0);
+					messageToKinect = "Robot played phase2_ready.mp3 to acknowledge shift to second iteration.";
 				}
 				else if(action == "changingThree")
 				{
 					LinuxActionScript::PlayMP3("phase3_ready.mp3");
 					robotwait(3.0);
+					messageToKinect = "Robot played phase3_ready.mp3 to acknowledge shift to third iteration.";
 				}
 				else if(action == "nothing")
 				{
 					robotwait(2.0); //then well....do nothing
+					messageToKinect = "Ready.";
 				}
 				else if(action == "repeated")
 				{
 					repeated = true;
 					LinuxActionScript::PlayMP3("repeatedStepAlert.mp3");
 					robotwait(3.0);
+					messageToKinect = "Ready.";
 				}
 				else if(action == "forceDefault")
 				{
@@ -309,55 +329,79 @@ int main()
 				//std::cout << "Made it after determining delays" << std::endl;
 					
 				//do the requested action
-				if(action == "hokeyPokey")
+				if(action.substr(0,10) == "hokeyPokey")
 				{
-					std::cout << "Was told to do the hokey pokey" << std::endl;
-					//need to make sure the robot is in default before it does the hokey pokey (ex. problems if the robot had one leg up prior)
-					if(previousState != "hokeyPokey")
+					robotwait(inputDelayConverted);
+					chosen = chooseUnderstoodMsg();
+					LinuxActionScript::PlayMP3(chosen.c_str());
+					robotwait(0.5);
+
+					messageToKinect = "Robot played " + chosen + " audio but did not perform an action.";
+
+					if(!skip)
 					{
-						if(previousState == "leftLegIn" || "leftLegShake")
+						messageToKinect = "Robot played " + chosen + " and performed the hokeypokey action.";
+						//need to make sure the robot is in default before it does the hokey pokey (ex. problems if the robot had one leg up prior)
+						if(previousState != "hokeyPokey")
 						{
-							//lower the left leg 
-							//this is different from telling the Darwin to go to default since you have to carefully adjust the knee, hip, and ankle motors
-							leftlegbacktodefault();
-							robotwait(1.0);
-						}
-						else if(previousState == "rightLegIn" || previousState == "rightLegShake")
-						{
-							//lower the right leg
-							rightlegbacktodefault();
-							robotwait(1.0);
-						}
-						else
-						{
+							if(previousState == "leftLegIn" || previousState == "leftLegShake")
+							{
+								//lower the left leg 
+								//this is different from telling the Darwin to go to default since you have to carefully adjust the knee, hip, and ankle motors
+								leftlegbacktodefault();
+								robotwait(1.0);
+							}
+							else if(previousState == "rightLegIn" || previousState == "rightLegShake")
+							{
+								//lower the right leg
+								rightlegbacktodefault();
+								robotwait(1.0);
+							}
+							else
+							{
 							defaultposition(); //the arm can go back to the default position no problem
 							robotwait(1.0);
+							}
 						}
-					}
 						
-					//do the hokey pokey
-					doHokeyPokey();
-					robotwait(1.0);
-					previousState == "hokeyPokey";
+						//do the hokey pokey
+						doHokeyPokey();
+						robotwait(1.0);
+						previousState == "hokeyPokey";
+					}
 				}
 				else if(action == "default")
 				{
+					robotwait(inputDelayConverted);
+					//LinuxActionScript::PlayMP3("understood.mp3");
+					chosen = chooseUnderstoodMsg();
+					LinuxActionScript::PlayMP3(chosen.c_str());
+					robotwait(0.5);
+
+					messageToKinect = "Robot played " + chosen + " but did not perform an action.";
+
 					if(!skip)
 					{
+						messageToKinect = "Robot played " + chosen + " and performed the default action.";
 						defaultposition();
+						previousState = "default";
 					}
-					else
-					{
-						LinuxActionScript::PlayMP3("understood.mp3");
-					}
-					robotwait(2.0);
+					robotwait(1.0);
 				}
 				else if(action == "leftArmIn")
 				{
 					robotwait(inputDelayConverted);
-					LinuxActionScript::PlayMP3("understood.mp3");
+					//LinuxActionScript::PlayMP3("understood.mp3");
+					chosen = chooseUnderstoodMsg();
+					LinuxActionScript::PlayMP3(chosen.c_str());
+					robotwait(0.5);
+
+					messageToKinect = "Robot played " + chosen + " but did not perform an action.";
+
 					if(!skip)
 					{
+						messageToKinect = "Robot played " + chosen + " and performed the leftArmIn action.";
+
 						if(previousState != "leftArmIn" || previousState != "leftArmShake")
 						{
 							//check legs
@@ -371,22 +415,33 @@ int main()
 								rightlegbacktodefault();
 								robotwait(1.0);
 							}
-							defaultposition();
-							robotwait(1.0);
-							//leftarmup();
+							else
+							{
+								defaultposition();
+								robotwait(1.0);
+							}
 						}
 						leftarmin();
 						robotwait(1.0);
+
+						previousState = "leftArmIn";
 					}
 					
-					previousState = "leftArmIn";
+					//previousState = "leftArmIn";
 				}
 				else if(action == "leftArmShake")
 				{
 					robotwait(inputDelayConverted);			
-					LinuxActionScript::PlayMP3("understood.mp3");
+					//LinuxActionScript::PlayMP3("understood.mp3");
+					chosen = chooseUnderstoodMsg();
+					LinuxActionScript::PlayMP3(chosen.c_str());
+					robotwait(0.5);
+
+					messageToKinect = "Robot played " + chosen + " but did not perform an action.";
+
 					if(!skip)
 					{
+						messageToKinect = "Robot played " + chosen + " and performed the leftArmShake action.";
 						//previous state should be leftArmIn
 						leftarmtiltout();
 						robotwait(1.0);
@@ -396,16 +451,26 @@ int main()
 						robotwait(1.0);
 						leftarmtiltin();
 						robotwait(1.0);
+
+						previousState = "leftArmShake";
 					}
 					
-					previousState = "leftArmShake";
+					//previousState = "leftArmShake";
 				}
 				else if(action == "rightArmIn")
 				{
 					robotwait(inputDelayConverted);
-					LinuxActionScript::PlayMP3("understood.mp3");
+					//LinuxActionScript::PlayMP3("understood.mp3");
+					chosen = chooseUnderstoodMsg();
+					LinuxActionScript::PlayMP3(chosen.c_str());
+					robotwait(0.5);
+
+					messageToKinect = "Robot played " + chosen + " but did not perform an action.";
+
 					if(!skip)
 					{
+						messageToKinect = "Robot played " + chosen + " and performed the rightArmIn action.";
+
 						if(previousState != "rightArmIn" || previousState != "rightArmShake")
 						{
 							//check legs
@@ -419,22 +484,33 @@ int main()
 								rightlegbacktodefault();
 								robotwait(1.0);
 							}
-							defaultposition();
-							robotwait(1.0);
-							//rightarmup();
+							else
+							{
+								defaultposition();
+								robotwait(1.0);
+							}
 						}
 						rightarmin();
 						robotwait(1.0);
+
+						previousState = "rightArmIn";
 					}
 					
-					previousState = "rightArmIn";
+					//previousState = "rightArmIn";
 				}
 				else if(action == "rightArmShake")
 				{
 					robotwait(inputDelayConverted);
-					LinuxActionScript::PlayMP3("understood.mp3");
+					//LinuxActionScript::PlayMP3("understood.mp3");
+					chosen = chooseUnderstoodMsg();
+					LinuxActionScript::PlayMP3(chosen.c_str());
+					robotwait(0.5);
+
+					messageToKinect = "Robot played " + chosen + " but did not perform an action.";
+
 					if(!skip)
 					{
+						messageToKinect = "Robot played " + chosen + " and performed the rightArmShake action.";
 						//previous state should be rightArmIn
 						rightarmtiltout();
 						robotwait(1.0);
@@ -444,40 +520,61 @@ int main()
 						robotwait(1.0);
 						rightarmtiltin();
 						robotwait(1.0);
+
+						previousState = "rightArmShake";
 					}
 					
-					previousState = "rightArmShake";
+					//previousState = "rightArmShake";
 				}
 				else if(action == "leftLegIn")
 				{
 					robotwait(inputDelayConverted);
-					LinuxActionScript::PlayMP3("understood.mp3");
+					//LinuxActionScript::PlayMP3("understood.mp3");
+					chosen = chooseUnderstoodMsg();
+					LinuxActionScript::PlayMP3(chosen.c_str());
+					robotwait(0.5);
+
+					messageToKinect = "Robot played " + chosen + " but did not perform an action.";
+					
 					if(!skip)
 					{
+						messageToKinect = "Robot played " + chosen + " and performed the leftLegIn action.";
 						if(previousState != "leftLegIn")
 						{
 							//check legs
-							if(previousState == "rightLegIn" || previousState == "rightLegshake")
+							if(previousState == "rightLegIn" || previousState == "rightLegShake")
 							{
 								rightlegbacktodefault();
 								robotwait(1.0);
 							}
-							defaultposition();
-							robotwait(1.0);
-							//leftleglifted();
+							else
+							{
+								defaultposition();
+								robotwait(1.0);
+								//leftleglifted();
+							}
 						}
 						leftlegin();
 						robotwait(1.0);
+
+						previousState = "leftLegIn";
 					}
 					
-					previousState = "leftLegIn";
+					//previousState = "leftLegIn";
 				}
 				else if(action == "leftLegShake")
 				{
 					robotwait(inputDelayConverted);
-					LinuxActionScript::PlayMP3("understood.mp3");
+					//LinuxActionScript::PlayMP3("understood.mp3");
+					chosen = chooseUnderstoodMsg();
+					LinuxActionScript::PlayMP3(chosen.c_str());
+					robotwait(0.5);
+
+					messageToKinect = "Robot played " + chosen + " but did not perform an action.";
+
 					if(!skip)
 					{
+						messageToKinect = "Robot played " + chosen + " and performed the leftLegShake action.";
 						//previous state should be leftFootIn
 						/*leftlegin();
 						leftleglifted();
@@ -496,16 +593,26 @@ int main()
 						leftankledown();
 						robotwait(1.0);
 						//leftlegbacktodefault();
+
+						previousState = "leftLegShake";
 					}
 					
-					previousState = "leftLegShake";
+					//previousState = "leftLegShake";
 				}
 				else if(action == "rightLegIn")
 				{
 					robotwait(inputDelayConverted);
-					LinuxActionScript::PlayMP3("understood.mp3");
+					//LinuxActionScript::PlayMP3("understood.mp3");
+					chosen = chooseUnderstoodMsg();
+					LinuxActionScript::PlayMP3(chosen.c_str());
+					robotwait(0.5);
+
+					messageToKinect = "Robot played " + chosen + " but did not perform an action.";
+
 					if(!skip)
 					{
+						messageToKinect = "Robot played " + chosen + " and performed the rightLegIn action.";
+
 						if(previousState != "rightLegIn")
 						{
 							//check legs
@@ -514,22 +621,34 @@ int main()
 								leftlegbacktodefault();
 								robotwait(1.0);
 							}
-							defaultposition();
-							robotwait(1.0);
-							//rightleglifted();
+							else
+							{
+								defaultposition();
+								robotwait(1.0);
+								//rightleglifted();
+							}
 						}
 						rightlegin();
 						robotwait(1.0);
+
+						previousState = "rightLegIn";
 					}
 					
-					previousState = "rightLegIn";
+					//previousState = "rightLegIn";
 				}
 				else if(action == "rightLegShake")
 				{
 					robotwait(inputDelayConverted);
-					LinuxActionScript::PlayMP3("understood.mp3");
+					//LinuxActionScript::PlayMP3("understood.mp3");
+					chosen = chooseUnderstoodMsg();
+					LinuxActionScript::PlayMP3(chosen.c_str());
+					robotwait(0.5);
+
+					messageToKinect = "Robot played " + chosen + " but did not perfom an action.";
+
 					if(!skip)
 					{
+						messageToKinect = "Robot played " + chosen + " and performed the rightLegShake action";
 						//previous state should be leftLegIn
 						/*rightlegin();
 						rightleglifted();
@@ -547,9 +666,11 @@ int main()
 						robotwait(1.0);
 						rightankledown();
 						//rightlegbacktodefault();
+
+						previousState = "rightLegShake";
 					}
 			
-					previousState = "rightLegShake";
+					//previousState = "rightLegShake";
 				}
 				
 				for(int i=0; i<1000; i++)
@@ -558,14 +679,53 @@ int main()
 				}
 				
 				robotwait(1.0);
-				if(!repeated)
+
+				if(!repeated && skipContinueMessage == false)
 				{
-					LinuxActionScript::PlayMP3("continue.mp3");
-					robotwait(2.0);
+
+					if(action.substr(0,10) == "hokeyPokey")
+					{
+						if(action.substr(action.length() - 4) == "_LAD")
+						{
+							LinuxActionScript::PlayMP3("left_hand_done.mp3");
+							robotwait(5.0);
+							messageToKinect = messageToKinect + " Played left_hand_done.mp3 to inform participant that they finished the left arm.";
+						}
+						else if(action.substr(action.length() - 4) == "_RAD")
+						{
+							LinuxActionScript::PlayMP3("right_hand_done.mp3");
+							robotwait(5.0);
+							messageToKinect = messageToKinect + " Played right_hand_done.mp3 to inform participant that they finished the right arm.";
+						}
+						else if(action.substr(action.length() - 4) == "_LLD")
+						{
+							LinuxActionScript::PlayMP3("left_foot_done.mp3");
+							robotwait(5.0);
+							messageToKinect = messageToKinect + " Played left_foot_done.mp3 to inform participant that they finished the left leg.";
+						}
+						else if(action.substr(action.length() - 4) == "_RLD")
+						{
+							LinuxActionScript::PlayMP3("right_foot_done.mp3");
+							robotwait(5.0);
+							messageToKinect = messageToKinect + " Played right_foot_done.mp3 to inform participant that they finished the right leg.";
+						}
+					}
+					else
+					{
+						//LinuxActionScript::PlayMP3("continue.mp3");
+						chosen = chooseContinueMsg();
+						LinuxActionScript::PlayMP3(chosen.c_str());
+						robotwait(2.0);
+					}
+
+					messageToKinect = messageToKinect + " Played " + chosen + " to instruct participant to continue.";
 				}
 				
+				robotwait(0.75); //because it's a bit fast during the runthrough so slow it down just a bit by adding another delay
+
 				repeated = false;
 				skip = false;
+				skipContinueMessage = false;
 				
 				//respond back to client saying it is ready for next message
 				send(clientSock, messageToKinect.c_str(), messageToKinect.length(), 0);
@@ -575,31 +735,40 @@ int main()
 		//audible notification if the connection is lost
 		LinuxActionScript::PlayMP3("lostConnection.mp3");
 		
-		if(previousState == "rightLegIn")
+		if(previousState == "rightLegIn" || previousState == "rightLegShake")
 		{
 			rightlegbacktodefault();
 			robotwait(1.0);
 		}
-		else if(previousState == "leftLegIn")
+		else if(previousState == "leftLegIn" || previousState == "leftLegShake")
 		{
 			leftlegbacktodefault();
 			robotwait(1.0);
 		}
-		else if(previousState == "rightArmIn")
+		else if(previousState == "rightArmIn" || previousState == "rightArmShake")
 		{
 			rightarmbacktodefault();
 			robotwait(1.0);
 		}
-		else if(previousState == "leftArmIn")
+		else if(previousState == "leftArmIn" || previousState == "leftArmShake")
 		{
 			leftarmbacktodefault();
 			robotwait(1.0);
 		}
-		//else if()
-			
-		//defaultposition();
 	} 
 	return 0;
+}
+
+std::string chooseUnderstoodMsg()
+{
+	int i = std::rand() % 3; //pick random number between 0 and 2
+	return understoodResponses[i];
+}
+
+std::string chooseContinueMsg()
+{
+	int i = std::rand() % 3; //pick random number between 0 and 2
+	return continueResponses[i];
 }
 
 void robotwait(double lengthInSeconds)
