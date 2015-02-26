@@ -1006,7 +1006,11 @@ namespace SkeletonDataServer
                                 			Console.WriteLine("Robot is correctly following the participant and putting its left leg in");
                                 			file.WriteLine("Robot is correctly following the participant and putting its left leg in. Time: " + getTimeStamp(DateTime.Now));
 
-                                			theHokeyPokeyDance.MoveNext(DanceMove.LLI);
+                                			if(!leftLegFreebie)
+                                			{
+                                				theHokeyPokeyDance.MoveNext(DanceMove.LLI);
+                                			}
+
                                 			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
                                 			file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
@@ -1138,7 +1142,11 @@ namespace SkeletonDataServer
                                 			Console.WriteLine("Robot is correctly following the participant and putting its right leg in");
                                 			file.WriteLine("Robot is correctly following the participant and putting its right leg in. Time: " + getTimeStamp(DateTime.Now));
 
-                                			theHokeyPokeyDance.MoveNext(DanceMove.RLI);
+                                			if(!rightLegFreebie)
+                                			{
+                                				theHokeyPokeyDance.MoveNext(DanceMove.RLI);
+                                			}
+
                                 			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
                                 			file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
@@ -1270,7 +1278,11 @@ namespace SkeletonDataServer
                                 			Console.WriteLine("Robot is correctly following the participant and putting its left arm in");
                                 			file.WriteLine("Robot is correctly following the participant and putting its left arm in. Time: " + getTimeStamp(DateTime.Now));
 
-                                			theHokeyPokeyDance.MoveNext(DanceMove.LHI);
+                                			if(!leftArmFreebie)
+                                			{
+                                				theHokeyPokeyDance.MoveNext(DanceMove.LHI);
+                                			}
+
                                 			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
                                 			file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
@@ -1402,7 +1414,11 @@ namespace SkeletonDataServer
                                 			Console.WriteLine("Robot is correctly following the participant and putting its right arm in");
                                 			file.WriteLine("Robot is correctly following the participant and putting its right arm in. Time: " + getTimeStamp(DateTime.Now));
 
-                                			theHokeyPokeyDance.MoveNext(DanceMove.RHI);
+                                			if(!rightArmFreebie)
+                                			{
+                                				theHokeyPokeyDance.MoveNext(DanceMove.RHI);
+                                			}
+
                                 			Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
                                 			file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
