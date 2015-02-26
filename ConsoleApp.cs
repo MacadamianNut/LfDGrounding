@@ -118,6 +118,10 @@ namespace SkeletonDataServer
 
         bool skipLogic = false;
 
+        //variables needed to give participants one free accidental move after doing a limb shake during the hokeypokey sequence
+        //to avoid the state machine jumping to a previous state and then to the non-sequential hokey pokey if they attempt the hokey pokey after that
+        bool leftLegFreebie = false, rightLegFreebie = false; leftArmFreebie = false, rightArmFreebie = false;
+
         //keep track of previous position, especially useful for determining if a hand or foot is shaking
         string previousPosition = "default";
 
@@ -945,10 +949,28 @@ namespace SkeletonDataServer
                                 	
                                 	if(!skipLogic) //for just left leg in (no shake)
                                 	{
-                                		Console.WriteLine("Participant put their left leg in");	
-                                		file.WriteLine("Participant put their left leg in. Time: " + getTimeStamp(DateTime.Now));
+                                		if((int)theHokeyPokeyDance.CurrentState == LEFT_LEG_SHAKE_15 && !leftLegFreebie)
+                                		{
+                                			//this could be an accidental or intentional move by the participant
+                                			//but I want to take into account an accidental "leaving left leg in after a shake"
+                                			//to avoid the state machine jumping back to the previous LEFT_LEG_IN_14 state, and then have them do the hokeypokey
+                                			//which will then jump the state machine to HOKEY_POKEY_NON_SEQUENTIAL_22, requiring to start left leg all over
+                                			//the participant will get ONE freebie, otherwise they're just out of luck
+
+                                			Console.WriteLine("Participant put their left leg in (no shake) after left leg shake. This could be an error on their part, so giving them a 1-turn pass on this");
+                                			file.WriteLine("Participant put their left leg in (no shake) after left leg shake. Giving them a 1-turn pass since it could be accidental. Time: " + getTimeStamp(DateTime.Now));
                                 		
-                                		if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LLI) - 2] == MAKEERROR)
+                                			leftLegFreebie = true;
+                                		}
+                                		else
+                                		{
+                                			leftLegFreebie = false;
+
+                                			Console.WriteLine("Participant put their left leg in");	
+                                			file.WriteLine("Participant put their left leg in. Time: " + getTimeStamp(DateTime.Now));
+                                		}
+
+                                		if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LLI) - 2] == MAKEERROR && !leftLegFreebie)
                                 		{
                                 			Console.WriteLine("Robot is making a mistake when person put their left leg in");
                                 			file.WriteLine("Robot is making a mistake when person put their left leg in. Time: " + getTimeStamp(DateTime.Now));
@@ -1065,10 +1087,22 @@ namespace SkeletonDataServer
                                 	
                                 	if(!skipLogic) //for just right leg in (no shake)
                                 	{
-                                		Console.WriteLine("Participant put their right leg in");	
-                                		file.WriteLine("Participant put their right leg in. Time: " + getTimeStamp(DateTime.Now));
+                                		if((int)theHokeyPokeyDance.CurrentState == RIGHT_LEG_SHAKE_20 && !rightLegFreebie)
+                                		{
+                                			Console.WriteLine("Participant put their right leg in (no shake) after right leg shake. This could be an error on their part, so giving them a 1-turn pass on this");
+                                			file.WriteLine("Participant put their right leg in (no shake) after right leg shake. Giving them a 1-turn pass since it could be accidental. Time: " + getTimeStamp(DateTime.Now));
+                                	
+                                			rightLegFreebie = true;
+                                		}
+                                		else
+                                		{
+                                			rightLegFreebie = false;
+
+                                			Console.WriteLine("Participant put their right leg in");	
+                                			file.WriteLine("Participant put their right leg in. Time: " + getTimeStamp(DateTime.Now));
+                                		}
                                 		
-                                		if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RLI) - 2] == MAKEERROR)
+                                		if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RLI) - 2] == MAKEERROR && !rightLegFreebie)
                                 		{
                                 			Console.WriteLine("Robot is making a mistake when person put their right leg in");
                                 			file.WriteLine("Robot is making a mistake when person put their right leg in. Time: " + getTimeStamp(DateTime.Now));
@@ -1185,10 +1219,22 @@ namespace SkeletonDataServer
                                 	
                                 	if(!skipLogic) //for just left arm in (no shake)
                                 	{
-                                		Console.WriteLine("Participant put their left arm in");	
-                                		file.WriteLine("Participant put their left arm in. Time: " + getTimeStamp(DateTime.Now));
+                                		if((int)theHokeyPokeyDance.CurrentState == LEFT_HAND_SHAKE_5 && !leftArmFreebie)
+                                		{
+                                			Console.WriteLine("Participant put their left arm in (no shake) after left arm shake. This could be an error on their part, so giving them a 1-turn pass on this");
+                                			file.WriteLine("Participant put their left arm in (no shake) after left hand shake. Giving them a 1-turn pass since it could be accidental. Time: " + getTimeStamp(DateTime.Now));
+                                			
+                                			leftArmFreebie = true;
+                                		}
+                                		else
+                                		{
+                                			leftArmFreebie = false;
+
+                                			Console.WriteLine("Participant put their left arm in");	
+                                			file.WriteLine("Participant put their left arm in. Time: " + getTimeStamp(DateTime.Now));
+                                		}
                                 		
-                                		if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LHI) - 2] == MAKEERROR)
+                                		if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LHI) - 2] == MAKEERROR && !leftArmFreebie)
                                 		{
                                 			Console.WriteLine("Robot is making a mistake when person put their left arm in");
                                 			file.WriteLine("Robot is making a mistake when person put their left arm in. Time: " + getTimeStamp(DateTime.Now));
@@ -1305,10 +1351,22 @@ namespace SkeletonDataServer
                                 	
                                 	if(!skipLogic) //for just right arm in (no shake)
                                 	{
-                                		Console.WriteLine("Participant put their right arm in");	
-                                		file.WriteLine("Participant put their right arm in. Time: " + getTimeStamp(DateTime.Now));
+                                		if((int)theHokeyPokeyDance.CurrentState == RIGHT_HAND_SHAKE_10 && !rightArmFreebie)
+                                		{
+                                			Console.WriteLine("Participant put their right arm in (no shake) after right arm shake. This could be an error on their part, so giving them a 1-turn pass on this");
+                                			file.WriteLine("Participant put their right arm in (no shake) after right hand shake. Giving them a 1-turn pass since it could be accidental. Time: " + getTimeStamp(DateTime.Now));
+                                			
+                                			rightArmFreebie = true;
+                                		}
+                                		else
+                                		{
+                                			rightArmFreebie = false;
+
+                                			Console.WriteLine("Participant put their right arm in");	
+                                			file.WriteLine("Participant put their right arm in. Time: " + getTimeStamp(DateTime.Now));
+                                		}
                                 		
-                                		if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RHI) - 2] == MAKEERROR)
+                                		if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RHI) - 2] == MAKEERROR && !rightArmFreebie)
                                 		{
                                 			Console.WriteLine("Robot is making a mistake when person put their right arm in");
                                 			file.WriteLine("Robot is making a mistake when person put their right arm in. Time: " + getTimeStamp(DateTime.Now));
