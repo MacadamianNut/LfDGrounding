@@ -21,7 +21,7 @@ namespace SkeletonDataServer
 		//change this variable for each subject
 		public static string subjectNum = "1";
 
-        public static string ipaddress = "10.11.133.115";
+        public static string ipaddress = "10.11.128.113";
 
 		//to be used in the output file transcribing the events during the interaction
 		public string timeStamp = "";
@@ -120,7 +120,7 @@ namespace SkeletonDataServer
 
         //variables needed to give participants one free accidental move after doing a limb shake during the hokeypokey sequence
         //to avoid the state machine jumping to a previous state and then to the non-sequential hokey pokey if they attempt the hokey pokey after that
-        bool leftLegFreebie = false, rightLegFreebie = false; leftArmFreebie = false, rightArmFreebie = false;
+        bool leftLegFreebie = false, rightLegFreebie = false, leftArmFreebie = false, rightArmFreebie = false;
 
         //keep track of previous position, especially useful for determining if a hand or foot is shaking
         string previousPosition = "default";
@@ -949,7 +949,7 @@ namespace SkeletonDataServer
                                 	
                                 	if(!skipLogic) //for just left leg in (no shake)
                                 	{
-                                		if((int)theHokeyPokeyDance.CurrentState == LEFT_LEG_SHAKE_15 && !leftLegFreebie)
+                                		if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.LEFT_LEG_SHAKE_15 && !leftLegFreebie)
                                 		{
                                 			//this could be an accidental or intentional move by the participant
                                 			//but I want to take into account an accidental "leaving left leg in after a shake"
@@ -1091,7 +1091,7 @@ namespace SkeletonDataServer
                                 	
                                 	if(!skipLogic) //for just right leg in (no shake)
                                 	{
-                                		if((int)theHokeyPokeyDance.CurrentState == RIGHT_LEG_SHAKE_20 && !rightLegFreebie)
+                                		if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.RIGHT_LEG_SHAKE_20 && !rightLegFreebie)
                                 		{
                                 			Console.WriteLine("Participant put their right leg in (no shake) after right leg shake. This could be an error on their part, so giving them a 1-turn pass on this");
                                 			file.WriteLine("Participant put their right leg in (no shake) after right leg shake. Giving them a 1-turn pass since it could be accidental. Time: " + getTimeStamp(DateTime.Now));
@@ -1227,7 +1227,7 @@ namespace SkeletonDataServer
                                 	
                                 	if(!skipLogic) //for just left arm in (no shake)
                                 	{
-                                		if((int)theHokeyPokeyDance.CurrentState == LEFT_HAND_SHAKE_5 && !leftArmFreebie)
+                                		if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.LEFT_HAND_SHAKE_5 && !leftArmFreebie)
                                 		{
                                 			Console.WriteLine("Participant put their left arm in (no shake) after left arm shake. This could be an error on their part, so giving them a 1-turn pass on this");
                                 			file.WriteLine("Participant put their left arm in (no shake) after left hand shake. Giving them a 1-turn pass since it could be accidental. Time: " + getTimeStamp(DateTime.Now));
@@ -1363,7 +1363,7 @@ namespace SkeletonDataServer
                                 	
                                 	if(!skipLogic) //for just right arm in (no shake)
                                 	{
-                                		if((int)theHokeyPokeyDance.CurrentState == RIGHT_HAND_SHAKE_10 && !rightArmFreebie)
+                                		if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.RIGHT_HAND_SHAKE_10 && !rightArmFreebie)
                                 		{
                                 			Console.WriteLine("Participant put their right arm in (no shake) after right arm shake. This could be an error on their part, so giving them a 1-turn pass on this");
                                 			file.WriteLine("Participant put their right arm in (no shake) after right hand shake. Giving them a 1-turn pass since it could be accidental. Time: " + getTimeStamp(DateTime.Now));
