@@ -343,11 +343,11 @@ int main()
 								rightlegbacktodefault();
 								robotwait(1.0);
 							}
-							else
+							/*else
 							{
 								defaultposition(); //the arms can go back to the default position no problem
 								robotwait(1.0);
-							}
+							}*/
 						}
 						
 						//do the hokey pokey
@@ -399,7 +399,7 @@ int main()
 					{
 						messageToKinect = "Robot played " + chosen + " and performed the leftArmIn action.";
 
-						if(previousState != "leftArmIn" || previousState != "leftArmShake")
+						if(!(previousState == "leftArmIn" || previousState == "leftArmShake")) //if the previous state is neither one of these
 						{
 							//check legs
 							if(previousState == "leftLegIn" || previousState == "leftLegShake")
@@ -437,7 +437,7 @@ int main()
 					{
 						messageToKinect = "Robot played " + chosen + " and performed the leftArmShake action.";
 					
-						if(previousState != "leftArmIn" || previousState != "leftArmShake")
+						if(!(previousState == "leftArmIn" || previousState == "leftArmShake"))
 						{
 							//check legs
 							if(previousState == "leftLegIn" || previousState == "leftLegShake")
@@ -454,6 +454,8 @@ int main()
 							{
 								defaultposition();
 								robotwait(1.0);
+								leftarmin();
+								robotwait(1.0);
 							}
 						}
 						leftarmtiltout();
@@ -463,6 +465,8 @@ int main()
 						leftarmtiltout();
 						robotwait(1.0);
 						leftarmtiltin();
+						robotwait(1.0);
+						leftarmtiltout();
 						robotwait(1.0);
 
 						previousState = "leftArmShake";
@@ -484,7 +488,7 @@ int main()
 					{
 						messageToKinect = "Robot played " + chosen + " and performed the rightArmIn action.";
 
-						if(previousState != "rightArmIn" || previousState != "rightArmShake")
+						if(!(previousState == "rightArmIn" || previousState == "rightArmShake"))
 						{
 							//check legs
 							if(previousState == "leftLegIn" || previousState == "leftLegShake")
@@ -522,7 +526,7 @@ int main()
 					{
 						messageToKinect = "Robot played " + chosen + " and performed the rightArmShake action.";
 						
-						if(previousState != "rightArmIn" || previousState != "rightArmShake")
+						if(!(previousState == "rightArmIn" || previousState == "rightArmShake"))
 						{
 							//check legs
 							if(previousState == "leftLegIn" || previousState == "leftLegShake")
@@ -539,6 +543,8 @@ int main()
 							{
 								defaultposition();
 								robotwait(1.0);
+								rightarmin();
+								robotwait(1.0);
 							}
 						}
 						rightarmtiltout();
@@ -548,6 +554,8 @@ int main()
 						rightarmtiltout();
 						robotwait(1.0);
 						rightarmtiltin();
+						robotwait(1.0);
+						rightarmtiltout();
 						robotwait(1.0);
 
 						previousState = "rightArmShake";
@@ -565,7 +573,7 @@ int main()
 					if(!skip)
 					{
 						messageToKinect = "Robot played " + chosen + " and performed the leftLegIn action.";
-						if(previousState != "leftLegIn")
+						if(!(previousState == "leftLegIn" || previousState == "leftLegShake"))
 						{
 							//check legs
 							if(previousState == "rightLegIn" || previousState == "rightLegShake")
@@ -598,15 +606,22 @@ int main()
 					{
 						messageToKinect = "Robot played " + chosen + " and performed the leftLegShake action.";
 						
-						if(previousState == "rightLegIn" || previousState == "rightLegShake")
+						if(!(previousState == "leftLegIn" || previousState == "leftLegShake"))
 						{
-							rightlegbacktodefault();
-							robotwait(1.0);
-						}
-						else
-						{
-							defaultposition();
-							robotwait(1.0);
+							if(previousState == "rightLegIn" || previousState == "rightLegShake") 
+							{
+								rightlegbacktodefault();
+								robotwait(1.0);
+								leftlegin();
+								robotwait(1.0);
+							}
+							else
+							{
+								defaultposition();
+								robotwait(1.0);
+								leftlegin();
+								robotwait(1.0);
+							}
 						}
 
 						leftankleup();
@@ -638,7 +653,7 @@ int main()
 					{
 						messageToKinect = "Robot played " + chosen + " and performed the rightLegIn action.";
 
-						if(previousState != "rightLegIn")
+						if(!(previousState == "rightLegIn" || previousState == "rightLegShake"))
 						{
 							//check legs
 							if(previousState == "leftLegIn" || previousState == "leftLegShake")
@@ -671,7 +686,7 @@ int main()
 					{
 						messageToKinect = "Robot played " + chosen + " and performed the rightLegShake action";
 						
-						if(previousState != "rightLegIn")
+						if(!(previousState == "rightLegIn" || previousState == "rightLegShake"))
 						{
 							//check legs
 							if(previousState == "leftLegIn" || previousState == "leftLegShake")
@@ -682,6 +697,8 @@ int main()
 							else
 							{
 								defaultposition();
+								robotwait(1.0);
+								rightlegin();
 								robotwait(1.0);
 							}
 						}
