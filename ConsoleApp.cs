@@ -616,7 +616,8 @@ namespace SkeletonDataServer
                                 		if(stateCount == STAGE2FEWMISTAKES)
                                 		{
                                 			//stage = "two";
-                                			numMistakes = random.Next(0,4) + 4; //pick randomly between 4-7 mistakes
+                                			//numMistakes = random.Next(0,4) + 4; //pick randomly between 4-7 mistakes
+                                			numMistakes = 7;
                                 			dataToSend = "changingTwo 0 go";
 
                                 			Console.WriteLine("***STARTING SECOND ITERATION OF DANCE***");
@@ -625,7 +626,8 @@ namespace SkeletonDataServer
                                 		else if(stateCount == STAGE3NONEISHMISTAKES)
                                 		{
                                 			//stage = "three";
-                                			numMistakes = random.Next(0,4); 	//pick randomly between 0-3 mistakes
+                                			//numMistakes = random.Next(0,4); 	//pick randomly between 0-3 mistakes
+                                			numMistakes = 3;
                                 			dataToSend = "changingThree 0 go";
 
                                 			Console.WriteLine("***STARTING THIRD ITERATION OF DANCE***");
@@ -690,7 +692,8 @@ namespace SkeletonDataServer
                                 		allMoves[i] = DONTMAKEERROR;
                                 	}
 
-                                	numMistakes = random.Next(0,5) + 8; //pick randomly between 8-12 mistakes
+                                	//numMistakes = random.Next(0,5) + 8; //pick randomly between 8-12 mistakes
+                                	numMistakes = 11;
 
                                 	//determine when the robot will make a mistake
                                 	int filler = 0;
@@ -755,6 +758,7 @@ namespace SkeletonDataServer
 
                                 		//determine if the robot will move or not 0=no, 1=yes
                                 		tempRandom = random.Next(0,2);
+                                		tempRandom = 1;
 
                                 		if(tempRandom == 0) //no movement
                                 		{
@@ -856,7 +860,7 @@ namespace SkeletonDataServer
                                 		}
 
                                 		//determine what the delay will be
-                                		movementDelay = random.Next(0,2);
+                                		movementDelay = random.Next(0,3) + 1;
 
                                         if(informLeftArmDone)
                                         {
@@ -909,6 +913,7 @@ namespace SkeletonDataServer
 
                                 				//determine if the robot will move or not 0=no, 1=yes
                                 				tempRandom = random.Next(0,2);
+                                				tempRandom = 1;
 
                                 				if(tempRandom == 0) //no movement
                                 				{
@@ -940,7 +945,7 @@ namespace SkeletonDataServer
                                 				leftFootLastX = Convert.ToDouble(jointNamesAndData[15,2]);
                                 				previousPosition = "leftLegShake";
 
-                                				movementDelay = random.Next(0,2);
+                                				movementDelay = random.Next(0,3) + 1;
 
                                 				dataToSend = "leftLegShake " + movementDelay + " yes";
                                 			}	
@@ -982,6 +987,7 @@ namespace SkeletonDataServer
 
                                 			//determine if the robot will move or not 0=no, 1=yes
                                 			tempRandom = random.Next(0,2);
+                                			tempRandom = 1;
 
                                 			if(tempRandom == 0) //no movement
                                 			{
@@ -1018,7 +1024,7 @@ namespace SkeletonDataServer
                                 			previousPosition = "leftLegIn";
 
                                 			//determine what the delay will be
-                                			movementDelay = random.Next(0,2);
+                                			movementDelay = random.Next(0,3) + 1;
 
                                 			dataToSend = "leftLegIn " + movementDelay + " yes";
                                 		}
@@ -1051,6 +1057,7 @@ namespace SkeletonDataServer
 
                                 				//determine if the robot will move or not 0=no, 1=yes
                                 				tempRandom = random.Next(0,2);
+                                				tempRandom = 1;
 
                                 				if(tempRandom == 0) //no movement
                                 				{
@@ -1082,7 +1089,7 @@ namespace SkeletonDataServer
                                 				rightFootLastX = Convert.ToDouble(jointNamesAndData[19,2]);
                                 				previousPosition = "rightLegShake";
 
-                                				movementDelay = random.Next(0,2);
+                                				movementDelay = random.Next(0,3) + 1;
 
                                 				dataToSend = "rightLegShake " + movementDelay + " yes";
                                 			}	
@@ -1118,6 +1125,7 @@ namespace SkeletonDataServer
 
                                 			//determine if the robot will move or not 0=no, 1=yes
                                 			tempRandom = random.Next(0,2);
+                                			tempRandom = 1;
 
                                 			if(tempRandom == 0) //no movement
                                 			{
@@ -1154,7 +1162,7 @@ namespace SkeletonDataServer
                                 			previousPosition = "rightLegIn";
 
                                 			//determine what the delay will be
-                                			movementDelay = random.Next(0,2);
+                                			movementDelay = random.Next(0,3) + 1;
 
                                 			dataToSend = "rightLegIn " + movementDelay + " yes";
                                 		}
@@ -1187,6 +1195,7 @@ namespace SkeletonDataServer
 
                                 				//determine if the robot will move or not 0=no, 1=yes
                                 				tempRandom = random.Next(0,2);
+                                				tempRandom = 1;
 
                                 				if(tempRandom == 0) //no movement
                                 				{
@@ -1218,7 +1227,7 @@ namespace SkeletonDataServer
                                 				leftHandLastX = Convert.ToDouble(jointNamesAndData[7,2]);
                                 				previousPosition = "leftArmShake";
 
-                                				movementDelay = random.Next(0,2);
+                                				movementDelay = random.Next(0,3) + 1;
 
                                 				dataToSend = "leftArmShake " + movementDelay + " yes";
                                 			}	
@@ -1254,6 +1263,7 @@ namespace SkeletonDataServer
 
                                 			//determine if the robot will move or not 0=no, 1=yes
                                 			tempRandom = random.Next(0,2);
+                                			tempRandom = 1;
 
                                 			if(tempRandom == 0) //no movement
                                 			{
@@ -1290,7 +1300,7 @@ namespace SkeletonDataServer
                                 			previousPosition = "leftArmIn";
 
                                 			//determine what the delay will be
-                                			movementDelay = random.Next(0,2);
+                                			movementDelay = random.Next(0,3) + 1;
 
                                 			dataToSend = "leftArmIn " + movementDelay + " yes";
                                 		}
@@ -1323,6 +1333,7 @@ namespace SkeletonDataServer
 
                                 				//determine if the robot will move or not 0=no, 1=yes
                                 				tempRandom = random.Next(0,2);
+                                				tempRandom = 1;
 
                                 				if(tempRandom == 0) //no movement
                                 				{
@@ -1354,7 +1365,7 @@ namespace SkeletonDataServer
                                 				rightHandLastX = Convert.ToDouble(jointNamesAndData[11,2]);
                                 				previousPosition = "rightArmShake";
 
-                                				movementDelay = random.Next(0,2);
+                                				movementDelay = random.Next(0,3) + 1;
 
                                 				dataToSend = "rightArmShake " + movementDelay + " yes";
                                 			}	
@@ -1390,6 +1401,7 @@ namespace SkeletonDataServer
 
                                 			//determine if the robot will move or not 0=no, 1=yes
                                 			tempRandom = random.Next(0,2);
+                                			tempRandom = 1;
 
                                 			if(tempRandom == 0) //no movement
                                 			{
@@ -1426,7 +1438,7 @@ namespace SkeletonDataServer
                                 			previousPosition = "rightArmIn";
 
                                 			//determine what the delay will be
-                                			movementDelay = random.Next(0,2);
+                                			movementDelay = random.Next(0,3) + 1;
 
                                 			dataToSend = "rightArmIn " + movementDelay + " yes";
                                 		}
@@ -1456,6 +1468,7 @@ namespace SkeletonDataServer
 
                                             //determine if the robot will move or not 0=no, 1=yes
                                             tempRandom = random.Next(0, 2);
+                                            tempRandom = 1;
 
                                             if (tempRandom == 0) //no movement
                                             {
