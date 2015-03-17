@@ -650,8 +650,12 @@ namespace SkeletonDataServer
 
                                			if(allMoves[randomNum] == DONTMAKEERROR)
                                			{
-                               				allMoves[randomNum] = MAKEERROR; //MAKEERROR = 1
-                               				filler++;
+                               				//but don't make an error on a retraction ([x-limb out])
+                               				if(!(randomNum == 1 || randomNum == 6 || randomNum == 11 || randomNum == 16))
+                               				{
+                               					allMoves[randomNum] = MAKEERROR; //MAKEERROR = 1
+                               					filler++;
+                               				}
                                			}
                                		}
 
@@ -702,8 +706,12 @@ namespace SkeletonDataServer
                                 		randomNum = random.Next(0,20);
                                 		if(allMoves[randomNum] == DONTMAKEERROR)
                                 		{
-                                			allMoves[randomNum] = MAKEERROR;
-                                			filler++;
+                                			//but don't make an error on a retraction ([x-limb out])
+                               				if(!(randomNum == 1 || randomNum == 6 || randomNum == 11 || randomNum == 16))
+                               				{
+                               					allMoves[randomNum] = MAKEERROR; //MAKEERROR = 1
+                               					filler++;
+                               				}
                                 		}
                                 	}
 
@@ -772,7 +780,8 @@ namespace SkeletonDataServer
                                 		}
 
                                 		//determine what the delay will be
-                                		movementDelay = random.Next(0,3) + 1;
+                                		//movementDelay = random.Next(0,3) + 1;
+                                		movementDelay = 0;
 
                                 		allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.HP) - 2] = DONTMAKEERROR; //don't make an error for this state again
 
@@ -860,7 +869,8 @@ namespace SkeletonDataServer
                                 		}
 
                                 		//determine what the delay will be
-                                		movementDelay = random.Next(0,3) + 1;
+                                		//movementDelay = random.Next(0,3) + 1;
+                                		movementDelay = 0;
 
                                         if(informLeftArmDone)
                                         {
@@ -927,7 +937,8 @@ namespace SkeletonDataServer
                                 				}
 
                                 				//determine what the delay will be
-                                				movementDelay = random.Next(0,3) + 1;
+                                				//movementDelay = random.Next(0,3) + 1;
+                                				movementDelay = 0;
 
                                 				allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LLS) - 2] = DONTMAKEERROR;
 
@@ -945,7 +956,8 @@ namespace SkeletonDataServer
                                 				leftFootLastX = Convert.ToDouble(jointNamesAndData[15,2]);
                                 				previousPosition = "leftLegShake";
 
-                                				movementDelay = random.Next(0,3) + 1;
+                                				//movementDelay = random.Next(0,3) + 1;
+                                				movementDelay = 0;
 
                                 				dataToSend = "leftLegShake " + movementDelay + " yes";
                                 			}	
@@ -1001,7 +1013,8 @@ namespace SkeletonDataServer
                                 			}
 
                                 			//determine what the delay will be
-                                			movementDelay = random.Next(0,3) + 1;
+                                			//movementDelay = random.Next(0,3) + 1;
+                                			movementDelay = 0;
 
                                 			dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
 
@@ -1024,7 +1037,8 @@ namespace SkeletonDataServer
                                 			previousPosition = "leftLegIn";
 
                                 			//determine what the delay will be
-                                			movementDelay = random.Next(0,3) + 1;
+                                			//movementDelay = random.Next(0,3) + 1;
+                                			movementDelay = 0;
 
                                 			dataToSend = "leftLegIn " + movementDelay + " yes";
                                 		}
@@ -1071,7 +1085,8 @@ namespace SkeletonDataServer
                                 				}
 
                                 				//determine what the delay will be
-                                				movementDelay = random.Next(0,3) + 1;
+                                				//movementDelay = random.Next(0,3) + 1;
+                                				movementDelay = 0;
 
                                 				allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RLS) - 2] = DONTMAKEERROR;
 
@@ -1089,7 +1104,8 @@ namespace SkeletonDataServer
                                 				rightFootLastX = Convert.ToDouble(jointNamesAndData[19,2]);
                                 				previousPosition = "rightLegShake";
 
-                                				movementDelay = random.Next(0,3) + 1;
+                                				//movementDelay = random.Next(0,3) + 1;
+                                				movementDelay = 0;
 
                                 				dataToSend = "rightLegShake " + movementDelay + " yes";
                                 			}	
@@ -1139,7 +1155,8 @@ namespace SkeletonDataServer
                                 			}
 
                                 			//determine what the delay will be
-                                			movementDelay = random.Next(0,3) + 1;
+                                			//movementDelay = random.Next(0,3) + 1;
+                                			movementDelay = 0;
 
                                 			dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
 
@@ -1162,7 +1179,8 @@ namespace SkeletonDataServer
                                 			previousPosition = "rightLegIn";
 
                                 			//determine what the delay will be
-                                			movementDelay = random.Next(0,3) + 1;
+                                			//movementDelay = random.Next(0,3) + 1;
+                                			movementDelay = 0;
 
                                 			dataToSend = "rightLegIn " + movementDelay + " yes";
                                 		}
@@ -1209,7 +1227,8 @@ namespace SkeletonDataServer
                                 				}
 
                                 				//determine what the delay will be
-                                				movementDelay = random.Next(0,3) + 1;
+                                				//movementDelay = random.Next(0,3) + 1;
+                                				movementDelay = 0;
 
                                 				allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LHS) - 2] = DONTMAKEERROR;
 
@@ -1227,7 +1246,8 @@ namespace SkeletonDataServer
                                 				leftHandLastX = Convert.ToDouble(jointNamesAndData[7,2]);
                                 				previousPosition = "leftArmShake";
 
-                                				movementDelay = random.Next(0,3) + 1;
+                                				//movementDelay = random.Next(0,3) + 1;
+                                				movementDelay = 0;
 
                                 				dataToSend = "leftArmShake " + movementDelay + " yes";
                                 			}	
@@ -1277,7 +1297,8 @@ namespace SkeletonDataServer
                                 			}
 
                                 			//determine what the delay will be
-                                			movementDelay = random.Next(0,3) + 1;
+                                			//movementDelay = random.Next(0,3) + 1;
+                                			movementDelay = 0;
 
                                 			dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
 
@@ -1300,7 +1321,8 @@ namespace SkeletonDataServer
                                 			previousPosition = "leftArmIn";
 
                                 			//determine what the delay will be
-                                			movementDelay = random.Next(0,3) + 1;
+                                			//movementDelay = random.Next(0,3) + 1;
+                                			movementDelay = 0;
 
                                 			dataToSend = "leftArmIn " + movementDelay + " yes";
                                 		}
@@ -1347,7 +1369,8 @@ namespace SkeletonDataServer
                                 				}
 
                                 				//determine what the delay will be
-                                				movementDelay = random.Next(0,3) + 1;
+                                				//movementDelay = random.Next(0,3) + 1;
+                                				movementDelay = 0;
 
                                 				allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RHS) - 2] = DONTMAKEERROR;
 
@@ -1365,7 +1388,8 @@ namespace SkeletonDataServer
                                 				rightHandLastX = Convert.ToDouble(jointNamesAndData[11,2]);
                                 				previousPosition = "rightArmShake";
 
-                                				movementDelay = random.Next(0,3) + 1;
+                                				//movementDelay = random.Next(0,3) + 1;
+                                				movementDelay = 0;
 
                                 				dataToSend = "rightArmShake " + movementDelay + " yes";
                                 			}	
@@ -1415,7 +1439,8 @@ namespace SkeletonDataServer
                                 			}
 
                                 			//determine what the delay will be
-                                			movementDelay = random.Next(0,3) + 1;
+                                			//movementDelay = random.Next(0,3) + 1;
+                                			movementDelay = 0;
 
                                 			dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
 
@@ -1438,7 +1463,8 @@ namespace SkeletonDataServer
                                 			previousPosition = "rightArmIn";
 
                                 			//determine what the delay will be
-                                			movementDelay = random.Next(0,3) + 1;
+                                			//movementDelay = random.Next(0,3) + 1;
+                                			movementDelay = 0;
 
                                 			dataToSend = "rightArmIn " + movementDelay + " yes";
                                 		}
@@ -1482,7 +1508,8 @@ namespace SkeletonDataServer
                                             }
 
                                             //determine what the delay will be
-                                            movementDelay = random.Next(0, 6);
+                                            //movementDelay = random.Next(0,3) + 1;
+                                            movementDelay = 0;
 
                                             allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.DEFAULT) - 2] = DONTMAKEERROR; //don't make an error for this state again
 
@@ -1500,7 +1527,8 @@ namespace SkeletonDataServer
                                             previousPosition = "default";
 
                                             //determine what the delay will be
-                                            movementDelay = random.Next(0, 2);
+                                            //movementDelay = random.Next(0, 2);
+                                            movementDelay = 0;
 
                                             dataToSend = "default " + movementDelay + " yes";
                                         }
