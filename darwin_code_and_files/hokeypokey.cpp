@@ -46,6 +46,10 @@ void handsupbacktodefault();
 void bendforward();
 void bendforwardbacktodefault();
 void doHokeyPokey();
+void lookup();
+void lookdown();
+void lookleft();
+void lookright();
 std::string chooseUnderstoodMsg();
 std::string chooseContinueMsg();
 
@@ -870,15 +874,72 @@ void leftarmin()
 
     //motor 2
     motorid = 2;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarminArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarminArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= leftarminArray[motorid-1])
+    {
+		for(int i=tmp;i>leftarminArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<leftarminArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
     
     //motor 4
     motorid = 4;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarminArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarminArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= leftarminArray[motorid-1])
+    {
+		for(int i=tmp;i>leftarminArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<leftarminArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 
     //motor 6
     motorid = 6;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarminArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarminArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= leftarminArray[motorid-1])
+    {
+		for(int i=tmp;i>leftarminArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<leftarminArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 }
 
 void leftarmtiltout()
@@ -887,15 +948,72 @@ void leftarmtiltout()
 
     //motor 2
     motorid = 2;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarmtiltoutArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarmtiltoutArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= leftarmtiltoutArray[motorid-1])
+    {
+		for(int i=tmp;i>leftarmtiltoutArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<leftarmtiltoutArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 
     //motor 4
     motorid = 4;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarmtiltoutArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarmtiltoutArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= leftarmtiltoutArray[motorid-1])
+    {
+		for(int i=tmp;i>leftarmtiltoutArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<leftarmtiltoutArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 
     //motor 6
     motorid = 6;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarmtiltoutArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarmtiltoutArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= leftarmtiltoutArray[motorid-1])
+    {
+		for(int i=tmp;i>leftarmtiltoutArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<leftarmtiltoutArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 }
 
 void leftarmtiltin()
@@ -904,15 +1022,72 @@ void leftarmtiltin()
     
     //motor 2
     motorid = 2;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarmtiltinArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarmtiltinArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= leftarmtiltinArray[motorid-1])
+    {
+		for(int i=tmp;i>leftarmtiltinArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<leftarmtiltinArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 
     //motor 4
     motorid = 4;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarmtiltinArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarmtiltinArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= leftarmtiltinArray[motorid-1])
+    {
+		for(int i=tmp;i>leftarmtiltinArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<leftarmtiltinArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 
     //motor 6
     motorid = 6;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarmtiltinArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftarmtiltinArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= leftarmtiltinArray[motorid-1])
+    {
+		for(int i=tmp;i>leftarmtiltinArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<leftarmtiltinArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 }
 
 void leftarmbacktodefault()
@@ -921,15 +1096,72 @@ void leftarmbacktodefault()
     
     //motor 2
     motorid = 2;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 	
 	//motor 4
     motorid = 4;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 
 	//motor 6
     motorid = 6;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 }
 
 void rightarmin()
@@ -938,15 +1170,72 @@ void rightarmin()
 
     //motor 1
    	motorid = 1;
-   	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarminArray[motorid-1], 0); 
+   	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarminArray[motorid-1], 0);
+   	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= rightarminArray[motorid-1])
+    {
+		for(int i=tmp;i>rightarminArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<rightarminArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 
    	//motor 3
 	motorid = 3;
-   	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarminArray[motorid-1], 0);     
+   	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarminArray[motorid-1], 0);  
+   	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= rightarminArray[motorid-1])
+    {
+		for(int i=tmp;i>rightarminArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<rightarminArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}   
 
    	//motor 5
    	motorid = 5;
-   	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarminArray[motorid-1], 0); 
+   	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarminArray[motorid-1], 0); 
+   	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= rightarminArray[motorid-1])
+    {
+		for(int i=tmp;i>rightarminArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<rightarminArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 }
 
 void rightarmtiltout()
@@ -955,15 +1244,72 @@ void rightarmtiltout()
 
     //motor 1
 	motorid = 1;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarmtiltoutArray[motorid-1], 0); 
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarmtiltoutArray[motorid-1], 0); 
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= rightarmtiltoutArray[motorid-1])
+    {
+		for(int i=tmp;i>rightarmtiltoutArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<rightarmtiltoutArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 
     //motor 3
 	motorid = 3;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarmtiltoutArray[motorid-1], 0); 
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarmtiltoutArray[motorid-1], 0); 
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= rightarmtiltoutArray[motorid-1])
+    {
+		for(int i=tmp;i>rightarmtiltoutArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<rightarmtiltoutArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 
     //motor 5
 	motorid = 5;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarmtiltoutArray[motorid-1], 0); 
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarmtiltoutArray[motorid-1], 0); 
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= rightarmtiltoutArray[motorid-1])
+    {
+		for(int i=tmp;i>rightarmtiltoutArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<rightarmtiltoutArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 }
 
 void rightarmtiltin()
@@ -972,15 +1318,72 @@ void rightarmtiltin()
 
     //motor 1
 	motorid = 1;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarmtiltinArray[motorid-1], 0); 
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarmtiltinArray[motorid-1], 0); 
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= rightarmtiltinArray[motorid-1])
+    {
+		for(int i=tmp;i>rightarmtiltinArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<rightarmtiltinArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 
     //motor 3
 	motorid = 3;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarmtiltinArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarmtiltinArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= rightarmtiltinArray[motorid-1])
+    {
+		for(int i=tmp;i>rightarmtiltinArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<rightarmtiltinArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 
     //motor 5
 	motorid = 5;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarmtiltinArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightarmtiltinArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= rightarmtiltinArray[motorid-1])
+    {
+		for(int i=tmp;i>rightarmtiltinArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<rightarmtiltinArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 }
 
 void rightarmbacktodefault()
@@ -989,15 +1392,72 @@ void rightarmbacktodefault()
     
     //motor 1
     motorid = 1;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 	
 	//motor 3
     motorid = 3;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 
 	//motor 5
     motorid = 5;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 }
 
 /*----------------------------------------------
@@ -1016,27 +1476,122 @@ void leftlegin()
 
 	//motor 12
 	motorid = 12;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftlegliftedArray[motorid-1], 0); 
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftlegliftedArray[motorid-1], 0); 
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= leftlegliftedArray[motorid-1])
+    {
+		for(int i=tmp;i>leftlegliftedArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<leftlegliftedArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
 	
     //motor 14
 	motorid = 14;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftlegliftedArray[motorid-1], 0); 
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftlegliftedArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= leftlegliftedArray[motorid-1])
+    {
+		for(int i=tmp;i>leftlegliftedArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<leftlegliftedArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 
     //motor 16
 	motorid = 16;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftlegliftedArray[motorid-1], 0); 
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftlegliftedArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= leftlegliftedArray[motorid-1])
+    {
+		for(int i=tmp;i>leftlegliftedArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<leftlegliftedArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}  
 }
 
 void leftankleup()
 {
 	motorid = 16;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftankleupArray[motorid-1], 0);
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftankleupArray[motorid-1], 0);
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= leftankleupArray[motorid-1])
+    {
+		for(int i=tmp;i>leftankleupArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<leftankleupArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 }
 
 void leftankledown()
 {
 	motorid = 16;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftankledownArray[motorid-1], 0);
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, leftankledownArray[motorid-1], 0);
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= leftankledownArray[motorid-1])
+    {
+		for(int i=tmp;i>leftankledownArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<leftankledownArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 }
 
 void leftlegbacktodefault()
@@ -1045,23 +1600,78 @@ void leftlegbacktodefault()
 
 	//motor 16
 	motorid = 16;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 	
 	robotwait(0.5); //delay to make sure the ankle goes back to the proper position before the rest of the leg moves
 
 	//motor 12
 	motorid = 12;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 
     //motor 14
     motorid = 14;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
-
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 }
 
 void rightlegin()
 {
-
 	//lock the all of the motors for the left leg first for support
 	for(int i=8; i<=18; i+=2)
 	{
@@ -1072,27 +1682,122 @@ void rightlegin()
 
 	//motor 11
 	motorid = 11;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightlegliftedArray[motorid-1], 0); 
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightlegliftedArray[motorid-1], 0); 
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= rightlegliftedArray[motorid-1])
+    {
+		for(int i=tmp;i>rightlegliftedArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<rightlegliftedArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 
 	//motor 13
 	motorid = 13;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightlegliftedArray[motorid-1], 0); 
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightlegliftedArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= rightlegliftedArray[motorid-1])
+    {
+		for(int i=tmp;i>rightlegliftedArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<rightlegliftedArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}  
 
     //motor 15
 	motorid = 15;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightlegliftedArray[motorid-1], 0);     
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightlegliftedArray[motorid-1], 0); 
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= rightlegliftedArray[motorid-1])
+    {
+		for(int i=tmp;i>rightlegliftedArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<rightlegliftedArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}     
 }
 
 void rightankleup()
 {
 	motorid = 15;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightankleupArray[motorid-1], 0);
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightankleupArray[motorid-1], 0);
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= rightankleupArray[motorid-1])
+    {
+		for(int i=tmp;i>rightankleupArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<rightankleupArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 }
 
 void rightankledown()
 {
 	motorid = 15;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightankledownArray[motorid-1], 0);
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, rightankledownArray[motorid-1], 0);
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= rightankledownArray[motorid-1])
+    {
+		for(int i=tmp;i>rightankledownArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<rightankledownArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 }
 
 void rightlegbacktodefault()
@@ -1101,17 +1806,74 @@ void rightlegbacktodefault()
 
 	//motor 15
 	motorid = 15;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 	
 	robotwait(0.5); //delay to make sure the ankle goes back to the proper position before the rest of the leg moves
 
 	//motor 11
 	motorid = 11;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 
     //motor 13
 	motorid = 13;
-    cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
+    //cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
+    cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 }
 
 //HOKEY POKEY HANDS UP CODE
@@ -1122,28 +1884,141 @@ void handsup()
 
 	//motor 1
 	motorid = 1;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsupArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsupArray[motorid-1], 0); 
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= handsupArray[motorid-1])
+    {
+		for(int i=tmp;i>handsupArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<handsupArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 
 	//motor 3
 	motorid = 3;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsupArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsupArray[motorid-1], 0); 
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= handsupArray[motorid-1])
+    {
+		for(int i=tmp;i>handsupArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<handsupArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 
 	//motor 5
 	motorid = 5;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsupArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsupArray[motorid-1], 0); 
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= handsupArray[motorid-1])
+    {
+		for(int i=tmp;i>handsupArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<handsupArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 
 	//motor 2
 	motorid = 2;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsupArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsupArray[motorid-1], 0); 
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= handsupArray[motorid-1])
+    {
+		for(int i=tmp;i>handsupArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<handsupArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 
 	//motor 4
 	motorid = 4;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsupArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsupArray[motorid-1], 0);
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= handsupArray[motorid-1])
+    {
+		for(int i=tmp;i>handsupArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<handsupArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}  
 
 	//motor 6
 	motorid = 6;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsupArray[motorid-1], 0);
-	
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsupArray[motorid-1], 0);
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= handsupArray[motorid-1])
+    {
+		for(int i=tmp;i>handsupArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<handsupArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 }
 
 void handsleft()
@@ -1152,11 +2027,49 @@ void handsleft()
 
 	//motor 3
 	motorid = 3;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsleftArray[motorid-1], 0);
-	
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsleftArray[motorid-1], 0);
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= handsleftArray[motorid-1])
+    {
+		for(int i=tmp;i>handsleftArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<handsleftArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
+
 	//motor 4
 	motorid = 4;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsleftArray[motorid-1], 0);
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsleftArray[motorid-1], 0);
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= handsleftArray[motorid-1])
+    {
+		for(int i=tmp;i>handsleftArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<handsleftArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 }
 
 void handsright()
@@ -1165,11 +2078,49 @@ void handsright()
 	
 	//motor 3
 	motorid = 3;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsrightArray[motorid-1], 0);
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsrightArray[motorid-1], 0);
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= handsrightArray[motorid-1])
+    {
+		for(int i=tmp;i>handsrightArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<handsrightArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 	
 	//motor 4
 	motorid = 4;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsrightArray[motorid-1], 0);
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, handsrightArray[motorid-1], 0);
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= handsrightArray[motorid-1])
+    {
+		for(int i=tmp;i>handsrightArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<handsrightArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 }
 
 void handsupbacktodefault()
@@ -1178,27 +2129,141 @@ void handsupbacktodefault()
 
 	//motor 1
 	motorid = 1;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 
 	//motor 3
 	motorid = 3;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 
 	//motor 5
 	motorid = 5;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 
 	//motor 2
 	motorid = 2;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}  
 
 	//motor 4
 	motorid = 4;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 
 	//motor 6
 	motorid = 6;
-	cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0); 
+	//cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, sittingdefaultArray[motorid-1], 0);
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+    if(tmp >= sittingdefaultArray[motorid-1])
+    {
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
+		}
+	} 
 }
 
 void bendforward()
@@ -1209,16 +2274,20 @@ void bendforward()
 	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
     if(tmp >= bentforwardArray[motorid-1])
     {
-		for(int i=tmp;i>bentforwardArray[motorid-1];i=i-theta){
-			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, tmp, 0); 
-			robotwait(0.01);
+		for(int i=tmp;i>bentforwardArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
 		}
 	}
 	else
 	{
-		for(int i=tmp;i<bentforwardArray[motorid-1];i=i+theta){
-			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, tmp, 0); 
-			robotwait(0.01);
+		for(int i=tmp;i<bentforwardArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
 		}
 	}
 
@@ -1226,16 +2295,20 @@ void bendforward()
     cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
     if(tmp >= bentforwardArray[motorid-1])
     {
-		for(int i=tmp;i>bentforwardArray[motorid-1];i=i-theta){
-			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, tmp, 0);
-			robotwait(0.01);
+		for(int i=tmp;i>bentforwardArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0);
+			//robotwait(0.01);
+			usleep(1);
 		}
 	}
 	else
 	{
-		for(int i=tmp;i<bentforwardArray[motorid-1];i=i+theta){
-			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, tmp, 0); 
-			robotwait(0.01);
+		for(int i=tmp;i<bentforwardArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
 		}
 	}
 }
@@ -1248,16 +2321,20 @@ void bendforwardbacktodefault()
 	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
     if(tmp >= sittingdefaultArray[motorid-1])
     {
-		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta){
-			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, tmp, 0); 
-			robotwait(0.01);
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
 		}
 	}
 	else
 	{
-		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta){
-			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, tmp, 0); 
-			robotwait(0.01);
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
 		}
 	}
 
@@ -1265,16 +2342,20 @@ void bendforwardbacktodefault()
     cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
     if(tmp >= sittingdefaultArray[motorid-1])
     {
-		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta){
-			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, tmp, 0);
-			robotwait(0.01);
+		for(int i=tmp;i>sittingdefaultArray[motorid-1];i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0);
+			//robotwait(0.01);
+			usleep(1);
 		}
 	}
 	else
 	{
-		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta){
-			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, tmp, 0); 
-			robotwait(0.01);
+		for(int i=tmp;i<sittingdefaultArray[motorid-1];i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0); 
+			//robotwait(0.01);
+			usleep(1);
 		}
 	}
 }
@@ -1292,4 +2373,78 @@ void doHokeyPokey()
 	handsright();
 	robotwait(1.0);
 	handsupbacktodefault();
+}
+
+//motor 19 scan
+//looking left: 
+//looking right: 1800
+//looking: 2280
+//motor 20 pan
+//looking down: 2100
+//looking up (Also default): 2500
+
+void lookup()
+{
+	motorid = 20;
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+	for(int i=tmp; i<sittingdefaultArray[motorid-1]; i=i+theta)
+	{
+		cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0);
+		usleep(1);
+	}
+}
+
+void lookdown()
+{
+	motorid = 20;
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+	for(int i=tmp; i>2100; i=i-theta)
+	{
+		cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0);
+		usleep(1);
+	}
+}
+
+void lookleft()
+{
+	motorid = 19;
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+	if(tmp >= 2200)
+	{
+		for(int i=tmp; i>2200; i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp; i<2200; i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0);
+			usleep(1);
+		}
+	}
+}
+
+void lookright()
+{
+	motorid = 19;
+	cm730.ReadWord(motorid, MX28::P_PRESENT_POSITION_L, &tmp, 0);
+	if(tmp >= 1800)
+	{
+		for(int i=tmp; i>1800; i=i-theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0);
+			usleep(1);
+		}
+	}
+	else
+	{
+		for(int i=tmp; i<1800; i=i+theta)
+		{
+			cm730.WriteWord(motorid, MX28::P_GOAL_POSITION_L, i, 0);
+			usleep(1);
+		}
+	}
 }
