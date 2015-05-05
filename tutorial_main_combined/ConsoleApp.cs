@@ -1010,51 +1010,43 @@ namespace SkeletonDataServer
                                 	file.WriteLine("Participant did the hokey pokey. Time: " + getTimeStamp(DateTime.Now));
                                 	//file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
-                                	if(!inTutorial) //only bother to check for mistakes if it's not in the tutorial
+                                	//check to see if the robot is supposed to make a mistake (but not in the tutorial)
+                                	if(!inTutorial && allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.HP) - 2] == MAKEERROR) //only bother to check for mistakes if it's not in the tutorial
                                 	{
-	                                	//check to see if the robot is supposed to make a mistake
-	                                	//if(((int)theHokeyPokeyDance.CurrentState <= (int)DanceState.HOKEY_POKEY_21) && allMoves[(int)theHokeyPokeyDance.CurrentState - 2] == MAKEERROR) //if it is supposed to make an error
-	                                	if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.HP) - 2] == MAKEERROR)
+	                                	
+	                                	Console.WriteLine("Robot is making a mistake when person is doing hokeypokey");
+	                                	file.WriteLine("Robot is making a mistake when person is doing hokeypokey. Time: " + getTimeStamp(DateTime.Now));
+
+	                                	Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+	                                	file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
+
+	                                	//previousPosition = "hokeypokeyError";
+
+	                                	//determine if the robot will move or not 0=no, 1=yes
+	                                	tempRandom = random.Next(0,2);
+	                                	tempRandom = 1;
+
+	                                	if(tempRandom == 0) //no movement
 	                                	{
-	                                		Console.WriteLine("Robot is making a mistake when person is doing hokeypokey");
-	                                		file.WriteLine("Robot is making a mistake when person is doing hokeypokey. Time: " + getTimeStamp(DateTime.Now));
-
-	                                		Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
-	                                		file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
-
-	                                		//previousPosition = "hokeypokeyError";
-
-	                                		//determine if the robot will move or not 0=no, 1=yes
-	                                		tempRandom = random.Next(0,2);
-	                                		tempRandom = 1;
-
-	                                		if(tempRandom == 0) //no movement
-	                                		{
-	                                			incorrectAction = "hokeyPokey";
-	                                			yesOrNoMovement = "no";
-	                                		}
-	                                		else
-	                                		{
-	                                			incorrectAction = determineIncorrectMove("default");
-	                                			yesOrNoMovement = "yes";
-	                                		}
-
-	                                		//determine what the delay will be
-	                                		//movementDelay = random.Next(0,3) + 1;
-	                                		movementDelay = 0;
-
-	                                		allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.HP) - 2] = DONTMAKEERROR; //don't make an error for this state again
-
-	                                		dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
-	                                		//readyToWrite = true;	
+	                                		incorrectAction = "hokeyPokey";
+	                                		yesOrNoMovement = "no";
 	                                	}
-	                                	/*else //then do things normally
+	                                	else
 	                                	{
-	                                		Console.WriteLine("Robot is correctly following the person and doing the hokeypokey");
-	                                		file.WriteLine("Robot is correctly following the person and doing the hokeypokey. Time: " + getTimeStamp(DateTime.Now));
-	                                	}*/
+	                                		incorrectAction = determineIncorrectMove("default");
+	                                		yesOrNoMovement = "yes";
+	                                	}
+
+	                                	//determine what the delay will be
+	                                	//movementDelay = random.Next(0,3) + 1;
+	                                	movementDelay = 0;
+
+	                                	allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.HP) - 2] = DONTMAKEERROR; //don't make an error for this state again
+
+	                                	dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
+	                                	//readyToWrite = true;		
 	                                }
-                                	else //in tutorial program and when the robot is supposed to do the correct thing in the actual LfD program
+                                	else //in tutorial program or when the robot is supposed to do the correct thing in the actual LfD program
                                 	{
                                 		if(!inTutorial)
                                 		{
@@ -1180,7 +1172,7 @@ namespace SkeletonDataServer
                                 			file.WriteLine("Participant shook their left leg. Time: " + getTimeStamp(DateTime.Now));
 
                                 			//now check to see if the robot should make an error here
-                                			if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LLS) - 2] == MAKEERROR) //if it is supposed to make an error
+                                			if(!inTutorial && allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LLS) - 2] == MAKEERROR) //if it is supposed to make an error
                                 			{
                                 				Console.WriteLine("Robot is making a mistake when person is shaking their left leg");
                                 				file.WriteLine("Robot is making a mistake when person is shaking their left leg. Time: " + getTimeStamp(DateTime.Now));
@@ -1213,10 +1205,13 @@ namespace SkeletonDataServer
 
                                 				dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
                                 			}
-                                			else //robot should do the correct thing here
+                                			else //in tutorial program or when the robot is supposed to do the correct thing in the actual LfD program
                                 			{
-                                				Console.WriteLine("Robot is correctly following the participant and shaking its left leg");
-                                				file.WriteLine("Robot is correctly following the participant and shaking its left leg. Time: " + getTimeStamp(DateTime.Now));
+                                				if(!inTutorial)
+                                				{
+                                					Console.WriteLine("Robot is correctly following the participant and shaking its left leg");
+                                					file.WriteLine("Robot is correctly following the participant and shaking its left leg. Time: " + getTimeStamp(DateTime.Now));
+                                				}
 
                                 				theHokeyPokeyDance.MoveNext(DanceMove.LLS);
                                 				Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
@@ -1256,7 +1251,7 @@ namespace SkeletonDataServer
                                 			file.WriteLine("Participant put their left leg in. Time: " + getTimeStamp(DateTime.Now));
                                 		}
 
-                                		if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LLI) - 2] == MAKEERROR && !leftLegFreebie)
+                                		if(!inTutorial && allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LLI) - 2] == MAKEERROR && !leftLegFreebie)
                                 		{
                                 			Console.WriteLine("Robot is making a mistake when person put their left leg in");
                                 			file.WriteLine("Robot is making a mistake when person put their left leg in. Time: " + getTimeStamp(DateTime.Now));
@@ -1289,10 +1284,13 @@ namespace SkeletonDataServer
 
                                 			allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LLI) - 2] = DONTMAKEERROR;
                                 		}
-                                		else //robot should do the correct thing
+                                		else //in tutorial program or when the robot is supposed to do the correct thing in the actual LfD program
                                 		{
-                                			Console.WriteLine("Robot is correctly following the participant and putting its left leg in");
-                                			file.WriteLine("Robot is correctly following the participant and putting its left leg in. Time: " + getTimeStamp(DateTime.Now));
+                                			if(!inTutorial)
+                                			{
+                                				Console.WriteLine("Robot is correctly following the participant and putting its left leg in");
+                                				file.WriteLine("Robot is correctly following the participant and putting its left leg in. Time: " + getTimeStamp(DateTime.Now));
+                                			}
 
                                 			if(!leftLegFreebie)
                                 			{
@@ -1328,7 +1326,7 @@ namespace SkeletonDataServer
                                 			file.WriteLine("Participant shook their right leg. Time: " + getTimeStamp(DateTime.Now));
 
                                 			//now check to see if the robot should make an error here
-                                			if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RLS) - 2] == MAKEERROR) //if it is supposed to make an error
+                                			if(!inTutorial && allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RLS) - 2] == MAKEERROR) //if it is supposed to make an error
                                 			{
                                 				Console.WriteLine("Robot is making a mistake when person is shaking their right leg");
                                 				file.WriteLine("Robot is making a mistake when person is shaking their right leg. Time: " + getTimeStamp(DateTime.Now));
@@ -1361,10 +1359,13 @@ namespace SkeletonDataServer
 
                                 				dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
                                 			}
-                                			else //robot should do the correct thing here
+                                			else //in tutorial program or when the robot is supposed to do the correct thing in the actual LfD program
                                 			{
-                                				Console.WriteLine("Robot is correctly following the participant and shaking its right leg");
-                                				file.WriteLine("Robot is correctly following the participant and shaking its right leg. Time: " + getTimeStamp(DateTime.Now));
+                                				if(!inTutorial)
+                                				{
+                                					Console.WriteLine("Robot is correctly following the participant and shaking its right leg");
+                                					file.WriteLine("Robot is correctly following the participant and shaking its right leg. Time: " + getTimeStamp(DateTime.Now));
+                                				}
 
                                 				theHokeyPokeyDance.MoveNext(DanceMove.RLS);
                                 				Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
@@ -1398,7 +1399,7 @@ namespace SkeletonDataServer
                                 			file.WriteLine("Participant put their right leg in. Time: " + getTimeStamp(DateTime.Now));
                                 		}
                                 		
-                                		if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RLI) - 2] == MAKEERROR && !rightLegFreebie)
+                                		if(!inTutorial && allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RLI) - 2] == MAKEERROR && !rightLegFreebie)
                                 		{
                                 			Console.WriteLine("Robot is making a mistake when person put their right leg in");
                                 			file.WriteLine("Robot is making a mistake when person put their right leg in. Time: " + getTimeStamp(DateTime.Now));
@@ -1431,10 +1432,13 @@ namespace SkeletonDataServer
 
                                 			allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RLI) - 2] = DONTMAKEERROR;
                                 		}
-                                		else //robot should do the correct thing
+                                		else //in tutorial program or when the robot is supposed to do the correct thing in the actual LfD program
                                 		{
-                                			Console.WriteLine("Robot is correctly following the participant and putting its right leg in");
-                                			file.WriteLine("Robot is correctly following the participant and putting its right leg in. Time: " + getTimeStamp(DateTime.Now));
+                                			if(!inTutorial)
+                                			{
+                                				Console.WriteLine("Robot is correctly following the participant and putting its right leg in");
+                                				file.WriteLine("Robot is correctly following the participant and putting its right leg in. Time: " + getTimeStamp(DateTime.Now));
+                                			}
 
                                 			if(!rightLegFreebie)
                                 			{
@@ -1470,7 +1474,7 @@ namespace SkeletonDataServer
                                 			file.WriteLine("Participant shook their left arm. Time: " + getTimeStamp(DateTime.Now));
 
                                 			//now check to see if the robot should make an error here
-                                			if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LHS) - 2] == MAKEERROR) //if it is supposed to make an error
+                                			if(!inTutorial && allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LHS) - 2] == MAKEERROR) //if it is supposed to make an error
                                 			{
                                 				Console.WriteLine("Robot is making a mistake when person is shaking their left arm");
                                 				file.WriteLine("Robot is making a mistake when person is shaking their left arm. Time: " + getTimeStamp(DateTime.Now));
@@ -1503,10 +1507,13 @@ namespace SkeletonDataServer
 
                                 				dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
                                 			}
-                                			else //robot should do the correct thing here
+                                			else //in tutorial program or when the robot is supposed to do the correct thing in the actual LfD program
                                 			{
-                                				Console.WriteLine("Robot is correctly following the participant and shaking its left arm");
-                                				file.WriteLine("Robot is correctly following the participant and shaking its left arm. Time: " + getTimeStamp(DateTime.Now));
+                                				if(!inTutorial)
+                                				{
+                                					Console.WriteLine("Robot is correctly following the participant and shaking its left arm");
+                                					file.WriteLine("Robot is correctly following the participant and shaking its left arm. Time: " + getTimeStamp(DateTime.Now));
+                                				}
 
                                 				theHokeyPokeyDance.MoveNext(DanceMove.LHS);
                                 				Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
@@ -1540,7 +1547,7 @@ namespace SkeletonDataServer
                                 			file.WriteLine("Participant put their left arm in. Time: " + getTimeStamp(DateTime.Now));
                                 		}
                                 		
-                                		if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LHI) - 2] == MAKEERROR && !leftArmFreebie)
+                                		if(!inTutorial && allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LHI) - 2] == MAKEERROR && !leftArmFreebie)
                                 		{
                                 			Console.WriteLine("Robot is making a mistake when person put their left arm in");
                                 			file.WriteLine("Robot is making a mistake when person put their left arm in. Time: " + getTimeStamp(DateTime.Now));
@@ -1573,10 +1580,13 @@ namespace SkeletonDataServer
 
                                 			allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.LHI) - 2] = DONTMAKEERROR;
                                 		}
-                                		else //robot should do the correct thing
+                                		else //in tutorial program or when the robot is supposed to do the correct thing in the actual LfD program
                                 		{
-                                			Console.WriteLine("Robot is correctly following the participant and putting its left arm in");
-                                			file.WriteLine("Robot is correctly following the participant and putting its left arm in. Time: " + getTimeStamp(DateTime.Now));
+                                			if(!inTutorial)
+                                			{
+                                				Console.WriteLine("Robot is correctly following the participant and putting its left arm in");
+                                				file.WriteLine("Robot is correctly following the participant and putting its left arm in. Time: " + getTimeStamp(DateTime.Now));
+                                			}
 
                                 			if(!leftArmFreebie)
                                 			{
@@ -1612,7 +1622,7 @@ namespace SkeletonDataServer
                                 			file.WriteLine("Participant shook their right arm. Time: " + getTimeStamp(DateTime.Now));
 
                                 			//now check to see if the robot should make an error here
-                                			if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RHS) - 2] == MAKEERROR) //if it is supposed to make an error
+                                			if(!inTutorial && allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RHS) - 2] == MAKEERROR) //if it is supposed to make an error
                                 			{
                                 				Console.WriteLine("Robot is making a mistake when person is shaking their right arm");
                                 				file.WriteLine("Robot is making a mistake when person is shaking their right arm. Time: " + getTimeStamp(DateTime.Now));
@@ -1645,10 +1655,13 @@ namespace SkeletonDataServer
 
                                 				dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
                                 			}
-                                			else //robot should do the correct thing here
+                                			else //in tutorial program or when the robot is supposed to do the correct thing in the actual LfD program
                                 			{
-                                				Console.WriteLine("Robot is correctly following the participant and shaking its right arm");
-                                				file.WriteLine("Robot is correctly following the participant and shaking its right arm. Time: " + getTimeStamp(DateTime.Now));
+                                				if(!inTutorial)
+                                				{
+                                					Console.WriteLine("Robot is correctly following the participant and shaking its right arm");
+                                					file.WriteLine("Robot is correctly following the participant and shaking its right arm. Time: " + getTimeStamp(DateTime.Now));
+                                				}
 
                                 				theHokeyPokeyDance.MoveNext(DanceMove.RHS);
                                 				Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
@@ -1682,7 +1695,7 @@ namespace SkeletonDataServer
                                 			file.WriteLine("Participant put their right arm in. Time: " + getTimeStamp(DateTime.Now));
                                 		}
                                 		
-                                		if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RHI) - 2] == MAKEERROR && !rightArmFreebie)
+                                		if(!inTutorial && allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RHI) - 2] == MAKEERROR && !rightArmFreebie)
                                 		{
                                 			Console.WriteLine("Robot is making a mistake when person put their right arm in");
                                 			file.WriteLine("Robot is making a mistake when person put their right arm in. Time: " + getTimeStamp(DateTime.Now));
@@ -1715,10 +1728,13 @@ namespace SkeletonDataServer
 
                                 			allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.RHI) - 2] = DONTMAKEERROR;
                                 		}
-                                		else //robot should do the correct thing
+                                		else //in tutorial program or when the robot is supposed to do the correct thing in the actual LfD program
                                 		{
-                                			Console.WriteLine("Robot is correctly following the participant and putting its right arm in");
-                                			file.WriteLine("Robot is correctly following the participant and putting its right arm in. Time: " + getTimeStamp(DateTime.Now));
+                                			if(!inTutorial)
+                                			{
+                                				Console.WriteLine("Robot is correctly following the participant and putting its right arm in");
+                                				file.WriteLine("Robot is correctly following the participant and putting its right arm in. Time: " + getTimeStamp(DateTime.Now));
+                                			}
 
                                 			if(!rightArmFreebie)
                                 			{
@@ -1751,7 +1767,7 @@ namespace SkeletonDataServer
                                         
                                         //check to see if the robot is supposed to make an error
                                         //default is a move in the hokeypokey dance which counts as [limb] out
-                                        if(allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.DEFAULT) - 2] == MAKEERROR)
+                                        if(!inTutorial && allMoves[(int)theHokeyPokeyDance.GetNext(DanceMove.DEFAULT) - 2] == MAKEERROR)
                                         {
                                             Console.WriteLine("Robot is making a mistake when person went to the default position");
                                             file.WriteLine("Robot is making a mistake when person went to the default position. Time: " + getTimeStamp(DateTime.Now));
@@ -1784,10 +1800,13 @@ namespace SkeletonDataServer
 
                                             dataToSend = incorrectAction + " " + movementDelay + " " + yesOrNoMovement;
                                         }
-                                        else //do the correct thing
+                                        else //in tutorial program or when the robot is supposed to do the correct thing in the actual LfD program
                                         {
-                                            Console.WriteLine("Robot is correctly following the participant and going back to the default position");
-                                            file.WriteLine("Robot is correctly following the participant and going back to the default position. Time: " + getTimeStamp(DateTime.Now));
+                                        	if(!inTutorial)
+                                        	{
+                                            	Console.WriteLine("Robot is correctly following the participant and going back to the default position");
+                                            	file.WriteLine("Robot is correctly following the participant and going back to the default position. Time: " + getTimeStamp(DateTime.Now));
+                                            }
 
                                             theHokeyPokeyDance.MoveNext(DanceMove.DEFAULT);
                                             Console.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
