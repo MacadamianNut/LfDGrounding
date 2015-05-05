@@ -50,8 +50,10 @@ void lookup();
 void lookdown();
 void lookleft();
 void lookright();
+void spazout();
 std::string chooseUnderstoodMsg();
 std::string chooseContinueMsg();
+std::string chooseErrorMsg();
 
 //motor 19 scan
 //looking left: 
@@ -118,6 +120,7 @@ int handsrightArray[] = {-1,-1,1439,2479,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
 
 std::string understoodResponses[] = {"understood.mp3", "okay.mp3", "alright.mp3"};
 std::string continueResponses[] = {"continue.mp3", "please_continue.mp3", "next_step.mp3"};
+std::string errorResponses[] = {"hmmm.mp3", "okay_indecisive.mp3", "umm.mp3"};
 std::string chosen = "";
 
 bool skipContinueMessage = false;
@@ -279,6 +282,14 @@ int main()
 					robotwait(3.0);
 					messageToKinect = "Robot played phase3_ready.mp3 to acknowledge shift to third iteration.";
 				}
+				else if(action == "spaz")
+				{
+					chosen = chooseErrorMsg();
+					LinuxActionScript::PlayMP3(chosen.c_str());
+					spazout();
+					robotwait(3.0);
+					messageToKinect = "Robot made a mistake and moved its head to show confusion";
+				}
 				else if(action == "nothing")
 				{
 					robotwait(2.0); //then well....do nothing
@@ -353,6 +364,8 @@ int main()
 								robotwait(1.0);
 							}*/
 						}
+
+						LinuxActionScript::PlayMP3("hokeypokey.mp3");
 						
 						//do the hokey pokey
 						doHokeyPokey();
@@ -360,7 +373,7 @@ int main()
 						previousState == "hokeyPokey";
 					}
 				}
-				else if(action == "default")
+				else if(action.substr(0,7) == "default")
 				{
 					robotwait(inputDelayConverted);
 					chosen = chooseUnderstoodMsg();
@@ -384,6 +397,28 @@ int main()
 								robotwait(0.5);
 							}
 						}
+
+						if(action.substr(action.length() - 4) == "_LHO")
+						{
+							LinuxActionScript::PlayMP3("lefthandout.mp3");
+						}
+						else if(action.substr(action.length() - 4) == "_RHO")
+						{
+							LinuxActionScript::PlayMP3("righthandout.mp3");
+						}
+						else if(action.substr(action.length() - 4) == "_LLO")
+						{
+							LinuxActionScript::PlayMP3("leftfootout.mp3");
+						}
+						else if(action.substr(action.length() - 4) == "_RLO")
+						{
+							LinuxActionScript::PlayMP3("rightfootout.mp3");
+						}
+						else
+						{
+							LinuxActionScript::PlayMP3("startingposition.mp3");
+						}
+
 						messageToKinect = "Robot played " + chosen + " and performed the default action.";
 						defaultposition();
 						robotwait(1.0);
@@ -422,6 +457,9 @@ int main()
 								robotwait(1.0);
 							}
 						}
+						
+						LinuxActionScript::PlayMP3("lefthandin.mp3");
+
 						leftarmin();
 						robotwait(1.0);
 
@@ -462,6 +500,9 @@ int main()
 								robotwait(1.0);
 							}
 						}
+						
+						LinuxActionScript::PlayMP3("lefthandshake.mp3");
+
 						leftarmtiltout();
 						robotwait(1.0);
 						leftarmtiltin();
@@ -511,6 +552,9 @@ int main()
 								robotwait(1.0);
 							}
 						}
+						
+						LinuxActionScript::PlayMP3("righthandin.mp3");
+
 						rightarmin();
 						robotwait(1.0);
 
@@ -551,6 +595,9 @@ int main()
 								robotwait(1.0);
 							}
 						}
+						
+						LinuxActionScript::PlayMP3("righthandshake.mp3");
+
 						rightarmtiltout();
 						robotwait(1.0);
 						rightarmtiltin();
@@ -591,6 +638,9 @@ int main()
 								robotwait(1.0);
 							}
 						}
+
+						LinuxActionScript::PlayMP3("leftfootin.mp3");
+
 						leftlegin();
 						robotwait(1.0);
 
@@ -627,6 +677,8 @@ int main()
 								robotwait(1.0);
 							}
 						}
+
+						LinuxActionScript::PlayMP3("leftfootshake.mp3");
 
 						leftankleup();
 						robotwait(1.0);
@@ -671,6 +723,9 @@ int main()
 								robotwait(1.0);
 							}
 						}
+
+						LinuxActionScript::PlayMP3("rightfootin.mp3");
+
 						rightlegin();
 						robotwait(1.0);
 
@@ -707,6 +762,8 @@ int main()
 							}
 						}
 
+						LinuxActionScript::PlayMP3("rightfootshake.mp3");
+
 						rightankleup();
 						robotwait(1.0);
 						rightankledown();
@@ -732,7 +789,6 @@ int main()
 
 				if(!repeated && skipContinueMessage == false)
 				{
-
 					if(action.substr(0,10) == "hokeyPokey")
 					{
 						if(action.substr(action.length() - 4) == "_LAD")
@@ -818,6 +874,12 @@ std::string chooseContinueMsg()
 {
 	int i = std::rand() % 3; //pick random number between 0 and 2
 	return continueResponses[i];
+}
+
+std::string chooseErrorMsg()
+{
+	int i = std::rand() % 3; //pick random number between 0 and 2
+	return errorResponses[i];
 }
 
 void robotwait(double lengthInSeconds)
@@ -2447,4 +2509,35 @@ void lookright()
 			usleep(1);
 		}
 	}
+}
+
+void chooseErrorMovement(int temp)
+{
+	if(temp == 0)
+		lookup();
+	else if(temp == 1)
+		lookdown();
+	else if(temp == 2)
+		lookleft();
+	else if(temp == 3)
+		lookright();
+}
+
+void spazout()
+{
+	int tempArray[] = {0,0,0,0};
+	int count = 0;
+
+	while(count < 4)
+	{
+		int i = std::rand() % 4; //pick random number between 0 and 2
+		if(tempArray[i] == 0)
+		{
+			chooseErrorMovement(i);
+			tempArray[i] = 1;
+			count++;
+		}
+	}
+
+	defaultposition();
 }
