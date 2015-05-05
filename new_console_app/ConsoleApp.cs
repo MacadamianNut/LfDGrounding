@@ -151,7 +151,7 @@ namespace SkeletonDataServer
          **********/
         public string determineIncorrectMove(string temp)
         {
-            bool tempFlag = true;
+            /*bool tempFlag = true;
             int choice = -1;
             string wrongAction = "";
             while(tempFlag)
@@ -166,6 +166,9 @@ namespace SkeletonDataServer
             if(!incorrectMoveArray[choice].Equals("default"))
                 wrongAction = incorrectMoveArray[choice] + "In";
 
+           return wrongAction;*/
+
+           string wrongAction = "spaz";
            return wrongAction;
         }
 
@@ -1530,7 +1533,26 @@ namespace SkeletonDataServer
                                             //movementDelay = random.Next(0, 2);
                                             movementDelay = 0;
 
-                                            dataToSend = "default " + movementDelay + " yes";
+                                            if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.LEFT_HAND_OUT_3)
+                                            {
+                                            	dataToSend = "default_LHO 0 yes";
+                                            }
+                                            else if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.RIGHT_HAND_OUT_8)
+                                            {
+                                            	dataToSend = "default_RHO 0 yes";
+                                            }
+                                            else if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.LEFT_LEG_OUT_13)
+                                            {
+                                            	dataToSend = "default_LLO 0 yes";
+                                            }
+                                            else if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.RIGHT_LEG_OUT_18)
+                                            {
+                                            	dataToSend = "default_RLO 0 yes";
+                                            }
+                                            else
+                                            {
+                                            	dataToSend = "default " + movementDelay + " yes";
+                                            }
                                         }
                                     }
                                     else
