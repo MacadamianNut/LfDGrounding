@@ -22,7 +22,7 @@ namespace SkeletonDataServer
 		//change this variable for each subject
 		public static string subjectNum = "1";
 
-        public static string ipaddress = "10.11.128.113";
+        public static string ipaddress = "10.11.130.222";
 
         public bool inTutorial = true; //change this in case the program crashes and you don't want to start over from the very beginning
         public bool tutorialStarted = false;
@@ -522,6 +522,10 @@ namespace SkeletonDataServer
 												audioclip = "hokeypokey.wav";
 	                                   			break;
 	                                   		case("hokeyPokey_LAD"):
+                                                using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\hokeypokey.wav"))
+                                                {
+                                                    simpleSound.PlaySync();
+                                                }
 	                                   			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\lefthandend_tutorial.wav"))
 												{
 													simpleSound.PlaySync();
@@ -529,6 +533,10 @@ namespace SkeletonDataServer
 												audioclip = "lefthandend_tutorial.wav";
 	                                   			break;
 	                                   		case("hokeyPokey_RAD"):
+                                                using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\hokeypokey.wav"))
+                                                {
+                                                    simpleSound.PlaySync();
+                                                }
 	                                   			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\righthandend_tutorial.wav"))
 												{
 													simpleSound.PlaySync();
@@ -536,6 +544,10 @@ namespace SkeletonDataServer
 												audioclip = "righthandend_tutorial.wav";
 	                                   			break;
 	                                   		case("hokeyPokey_LLD"):
+                                                using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\hokeypokey.wav"))
+                                                {
+                                                    simpleSound.PlaySync();
+                                                }
 	                                   			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\leftfootend_tutorial.wav"))
 												{
 													simpleSound.PlaySync();
@@ -543,6 +555,10 @@ namespace SkeletonDataServer
 												audioclip = "leftfootend_tutorial.wav";
 	                                   			break;
 	                                   		case("hokeyPokey_RLD"):
+                                                using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\hokeypokey.wav"))
+                                                {
+                                                    simpleSound.PlaySync();
+                                                }
 	                                   			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\rightfootend_tutorial.wav"))
 												{
 													simpleSound.PlaySync();
@@ -641,7 +657,7 @@ namespace SkeletonDataServer
 												audioclip = "rightfootout_tutorial.wav";
 	                                   			break;
                                    		}
-
+                                        System.Threading.Thread.Sleep(2500);
                                    		Console.WriteLine("Kinect played \"" + audioclip + "\". Time: " + getTimeStamp(DateTime.Now));
                                 	}
                                 }
