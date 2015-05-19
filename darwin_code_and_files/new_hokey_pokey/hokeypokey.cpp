@@ -5,7 +5,7 @@ The only thing this program tracks during the interaction is the previous action
 This is just in case the robot loses connection to the Kinect computer so that it can reset itself properly
 */
 
-//THIS IS SITTING DOWN VERSION OF THE HOKEY POKEY FOR THE ROBOT
+//THIS IS STANDING UP VERSION OF THE HOKEY POKEY FOR THE ROBOT
 
 #include <stdio.h>
 #include <iostream>
@@ -706,6 +706,8 @@ int main()
 						leftlegtiltin();
 						robotwait(1.0);
 						leftlegin();
+						robotwait(1.0);
+						leftleglifted();
 
 						previousState = "leftLegShake";
 					}
@@ -807,6 +809,8 @@ int main()
 						rightlegtiltin();
 						robotwait(1.0);
 						rightlegin();
+						robotwait(1.0);
+						rightleglifted();
 
 						previousState = "rightLegShake";
 					}
