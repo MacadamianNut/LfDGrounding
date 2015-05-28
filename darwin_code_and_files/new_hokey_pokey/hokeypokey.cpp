@@ -116,7 +116,11 @@ int handsleftArray[] = {-1,-1,1712,2358,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-
 
 int handsrightArray[] = {-1,-1,1439,2479,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
 
-std::string understoodResponses[] = {"understood.mp3", "okay.mp3", "alright.mp3"};
+//std::string understoodResponses[] = {"understood.mp3", "okay.mp3", "alright.mp3"};
+std::string understoodResponses[] = {"understood.mp3", "okay.mp3", "alright.mp3", "hmmm.mp3", "okay_indecisive.mp3", "umm.mp3"}; 
+/*Combined the understoodResponses and errorResponses because if the robot only says umm when it makes a mistake
+Then the robot knows or has an idea when its making a mistake, therefore defeating the purpose of the whole experiment
+At least with this approach, I can use the "varying degress of confience" narrative with participants*/
 std::string continueResponses[] = {"continue.mp3", "please_continue.mp3", "next_step.mp3"};
 std::string errorResponses[] = {"hmmm.mp3", "okay_indecisive.mp3", "umm.mp3"};
 std::string chosen = "";
@@ -902,7 +906,8 @@ int main()
 
 std::string chooseUnderstoodMsg()
 {
-	int i = std::rand() % 3; //pick random number between 0 and 2
+	//int i = std::rand() % 3; //pick random number between 0 and 2
+	int i = std::rand() % 6; //pick random number between 0 and 5
 	return understoodResponses[i];
 }
 

@@ -22,7 +22,7 @@ namespace SkeletonDataServer
 		//change this variable for each subject
 		public static string subjectNum = "1";
 
-        public static string ipaddress = "10.11.129.142";
+        public static string ipaddress = "10.11.132.203";
 
         public bool inTutorial = true; //change this in case the program crashes and you don't want to start over from the very beginning
         public bool tutorialStarted = false;
@@ -143,7 +143,7 @@ namespace SkeletonDataServer
 
         //random number needed for the three test conditions
         Random random = new Random();
-        int stateCount = STAGE0PREINTERACTION, numMistakes, randomNum, tempRandom;
+        int stateCount = STAGE0PREINTERACTION, numMistakes, randomNum, tempRandom, correctClip;
 
         //string[] incorrectMoveArray = {"leftArm", "rightArm", "leftLeg", "rightLeg", "default"};
         string[] incorrectMoveArray = {"leftArm", "rightArm", "leftLeg", "rightLeg"};
@@ -641,10 +641,28 @@ namespace SkeletonDataServer
 										{
                                 			if(words[0].Equals("correct"))
                                 			{
-                                				using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\correct_tutorial.wav"))
-												{
-													simpleSound.PlaySync();
-												}
+                                                correctClip = random.Next(0,3);
+                                                if(correctClip == 0)
+                                                {
+                                				    using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\yescorrect_tutorial.wav"))
+												    {
+													   simpleSound.PlaySync();
+												    }
+                                                }
+                                                else if(correctClip == 1)
+                                                {
+                                                    using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\thatiscorrect_tutorial.wav"))
+                                                    {
+                                                       simpleSound.PlaySync();
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\correctmove_tutorial.wav"))
+                                                    {
+                                                       simpleSound.PlaySync();
+                                                    }
+                                                }
                                 			}
                                 			else
                                 			{
@@ -1191,7 +1209,10 @@ namespace SkeletonDataServer
 
                                 				previousPosition = "hokeyPokey";
 
-                                				dataToSend = "correct " + theHokeyPokeyDance.CurrentState + " yes";
+                                                if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.HOKEY_POKEY_21)
+                                                    dataToSend = "end tutorial 0";
+                                                else
+                                				    dataToSend = "correct " + theHokeyPokeyDance.CurrentState + " yes";
                                 			}
                                 			else //incorrect
                                 			{
@@ -2047,7 +2068,7 @@ namespace SkeletonDataServer
                                                     file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
                                                     rightHandLastX = Convert.ToDouble(jointNamesAndData[11,2]);
-                                                    previousPosition = "leftArmIn";
+                                                    previousPosition = "rightArmIn";
 
                                                     //dataToSend = "leftArmInCorrect " + theHokeyPokeyDance.CurrentState + " yes"; //I'll use this in a function that checks the current state and states what the next state is that follows (in numerical order)  
                                                     dataToSend = "correct " + theHokeyPokeyDance.CurrentState + " yes";
