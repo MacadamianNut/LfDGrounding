@@ -129,6 +129,14 @@ namespace SkeletonDataServer
         //keep track of previous position, especially useful for determining if a hand or foot is shaking
         string previousPosition = "default";
 
+        //variable to keep track of the active limb that the participant is demonstrating 
+        //for example: if the participant says they are teaching the movements for the left arm but then toss in the right arm, then the robot can point this out
+        string activeLimb = "none";
+
+        //record the last three positions where if they're all equal, then the teacher is done with the demonstration
+        string[] pastPositions = new string[3];
+        int pastPositionsCounter = 0;
+
         string incorrectAction;
 
         string yesOrNoMovement;
@@ -584,7 +592,7 @@ namespace SkeletonDataServer
                             	Console.WriteLine("\tJust started. Current state = " + theHokeyPokeyDance.CurrentState);
                             	file.WriteLine("Just started. Current state = " + theHokeyPokeyDance.CurrentState + ". Time: " + getTimeStamp(DateTime.Now));
                             }
-                            	flag = false;
+                            flag = false;
                         }
 
                         //event handlers check the "processing" variable before attempting to process code
@@ -680,13 +688,36 @@ namespace SkeletonDataServer
                                 }
                                 else //in actual LfD portion
                                 {
-                                	if (!dataToSend.Equals("nothing here alright"))
-                                	{
+                                    if(!dataToSend.Equals("nothing here alright"))
+                                    {
+                                        if(dataToSend.Equals("sequence"))
+                                        {
+                                            //the message sent to the Darwin will be move sequence
+                                            messageToDarwin = moveSequence;
+                                        }
+                                        else if(dataToSend.Equals("repeated"))
+                                        {
+                                            //tell the Darwin that the participant did a repeated move
+                                            messageToDarwin = "repeated";
+                                        }
+                                        else if()
+                                        {
+                                            //tell the Darwin that it either did the correct or incorrect thing after it attempts the dance
+                                        }
+                                        else if()
+                                        {
+                                            //tell the Darwin which limb the participant is going to demonstrate
+                                        }
+                                        else //that it was just an action performed
+                                        {
+                                            messageToDarwin = "actionPerformed";
+                                        }
+
                                     	//Console.WriteLine("Processing has started");
-                                    	byte[] outStream = System.Text.Encoding.ASCII.GetBytes(dataToSend);
-                                    	clientSocket.Send(Encoding.ASCII.GetBytes(dataToSend));
-                                    	Console.WriteLine("Sent data: " + dataToSend);
-                                    	file.WriteLine("Sent the following to robot: " + dataToSend + ". Time: " + getTimeStamp(DateTime.Now));
+                                    	byte[] outStream = System.Text.Encoding.ASCII.GetBytes(messageToDarwin);
+                                    	clientSocket.Send(Encoding.ASCII.GetBytes(messageToDarwin));
+                                    	Console.WriteLine("Sent data: " + messageToDarwin);
+                                    	file.WriteLine("Sent the following to robot: " + messageToDarwin + ". Time: " + getTimeStamp(DateTime.Now));
 
                                     	byte[] bytes = new byte[256];
                                     	int i = clientSocket.Receive(bytes); //Cory note: may need to change this code to actually make sure we recieved a message
@@ -1080,6 +1111,20 @@ namespace SkeletonDataServer
                                 			dataToSend = "incorrect " + theHokeyPokeyDance.CurrentState + " yes";
                                 		}	
                                    	}
+
+                                    //non tutorial code
+
+                                    //first check if it's a repeated movement
+                                    if(previousPosition.Equals("hokeyPokey"))
+                                    {
+                                        dataToSend = "repeated";
+                                    }
+                                    else
+                                    {
+                                        moveSequence += " hokeypokey";
+                                        dataToSend = "sequence";
+                                    }
+
                                 	readyToWrite = true;                          	
                                 }
                                 else if (leftLegIn() && (started || tutorialStarted))
@@ -1127,12 +1172,30 @@ namespace SkeletonDataServer
                                                 }
                                 			}	
                                             //TODO: add code for when it's not in tutorial here for left leg shake
-                                		}
+
+                                            //first check to make sure the active limb is left leg
+                                            if(!activeLimb.Equals("leftLeg"))
+                                            {
+                                                dataToSend = "humanError";
+                                            }
+                                            else if(previousPosition.Equals("leftLegShake")) //check to see if its a repeated movement
+                                            {
+                                               //then send a repeated movement notification to the robot
+                                               dataToSend = "repeated";
+                                            }
+                                            else //if the participant is using the correct limb and it's not a repeated movement, everything is good
+                                            {
+                                                //add this demonstration to the list
+                                                moveSequence += " leftLegShake";
+
+                                                dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                                //I won't send the moveSequence to it until the repeated move counter is full
+                                		    }
+                                        }
                                 	}
                                 	
                                 	if(!skipLogic) //for just left leg in (no shake)
                                 	{
-                                		
                                 		Console.WriteLine("Participant put their left leg in");	
                                 		file.WriteLine("Participant put their left leg in. Time: " + getTimeStamp(DateTime.Now));
                                 		
