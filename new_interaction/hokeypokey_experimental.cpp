@@ -253,6 +253,11 @@ int main()
 							robotwait(4.0);
 							messageToKinect = "Robot played repeatedMovement.mp3 to signify that this was a repeated movement.";
 							break;
+						case "humanError":
+							LinuxActionScript::PlayMP3("humanErrorDifferentLimb.mp3");
+							robotwait(4.0);
+							messageToKinect = "Robot played humanErrorDifferentLimb.mp3 to signify that the participant presented a limb other than the current limb.";
+							break;
 						case "wrongconfirmation":
 							LinuxActionScript::PlayMP3("incorrectLimbQuery.mp3");
 							robotwait(6.0);
@@ -623,6 +628,7 @@ int main()
 							previousState = "default";
 							messageToKinect += "default ";
 						}
+						robotwait(0.5); //a little break between each movement
 					} //end for loop
 				}
 				

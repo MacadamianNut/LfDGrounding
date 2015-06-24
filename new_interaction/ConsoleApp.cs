@@ -715,6 +715,10 @@ namespace SkeletonDataServer
                                             //tell the Darwin that the participant did a repeated move
                                             messageToDarwin = "repeated";
                                         }
+                                        else if(dataToSend.Equals("humanError"))
+                                        {
+                                            messageToDarwin = "humanError";
+                                        }
                                         else if(dataToSend.Equals("wrongconfirmation"))
                                         {
                                             //tell the Darwin that it either did the correct or incorrect thing after it attempts the dance
