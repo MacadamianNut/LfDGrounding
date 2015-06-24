@@ -244,102 +244,393 @@ int main()
 				std::vector<std::string> tokens;
 				tokens = stringSplit(holder);
 
-				if(tokens.size() % 2 != 0)
+				if(tokens.size() == 1) //then the message is either: repeated, wrongconfirmation, rightconfirmation, newlimb, getStarted, or actionPerformed
 				{
-					std::cout << "Unexpected message received. Ending program." << std::endl;
-				}
-
-				for(unsigned int i=0; i<tokens.size(); i+=2)
-				{
-					//get the action
-					limb = tokens[i];
-
-					//get the number
-					//movementNumber = tokens[i+1];
-					std::stringstream convert(tokens[i+1]);
-					convert >> movementNumber;
-
-					mistakeFlag = true;
-
-					//add a slight delay so that the robot doesn't respond too quickly
-					robotwait(0.75);
-
-					if(movementNumber < 0) //then this is not a limb movement (it would be the Kinect telling the darwin to start, stop, etc.)
+					switch (tokens[0])
 					{
-						//do command
-						if(limb == "bodyDetected")
-						{
-							LinuxActionScript::PlayMP3("welcome.mp3");
-							robotwait(16.0);
-							messageToKinect = "Robot played welcome.mp3 to acknowledge that a body was detected.";
-						}
-						else if(limb == "getStarted")
-						{
+						case "repeated":
+							LinuxActionScript::PlayMP3("repeatedMovement.mp3");
+							robotwait(4.0);
+							messageToKinect = "Robot played repeatedMovement.mp3 to signify that this was a repeated movement.";
+							break;
+						case "wrongconfirmation":
+							LinuxActionScript::PlayMP3("incorrectLimbQuery.mp3");
+							robotwait(6.0);
+							messageToKinect = "Robot played incorrectLimbQuery.mp3 to signify that it made a mistake during the attempted dance and wants to see the demonstration again.";
+							break;
+						case "rightconfirmation":
+							LinuxActionScript::PlayMP3("nextlimbQuery.mp3");
+							robotwait(6.0);
+							messageToKinect = "Robot played nextlimbQuery.mp3 to signify that it did the dance correctly and wants to learn the next limb.";
+							break;
+						case "newlimb":
+							LinuxActionScript::PlayMP3("readyNewLimb.mp3");
+							robotwait(3.0);
+							messageToKinect = "Robot played readyNewLimb.mp3 to signify that it is ready to learn the next limb.";
+							break;
+						case "repeatLimb":
+							LinuxActionScript::PlayMP3("demonstrateAgain.mp3");
+							robotwait(4.0);
+							messageToKinect = "Robot played demonstrateAgain.mp3 to signify that it wants to see the demonstration of the limb again.";
+							break;
+						case "getStarted":
 							LinuxActionScript::PlayMP3("ready_to_begin.mp3");
 							robotwait(9.0);
-							messageToKinect = "Robot played ready_to_begin.mp3 to acknowledge start.";
-						}
-						else if(limb == "nothing")
-						{
+							messageToKinect = "Robot played ready_to_begin.mp3 to signify the start of the interaction.";
+							break;
+						case  "actionPerformed":
+							chosen = chooseContinueMsg();
+							LinuxActionScript::PlayMP3(chosen.c_str());
 							robotwait(2.0);
-						}
-						else if(limb == "repeated")
+							messageToKinect = "Robot played " + chosen + " to signify that it saw the participant's movement.";
+							break;
+					}
+				}
+				else //then it is a sequence of movements
+				{
+					LinuxActionScript::PlayMP3("attemptingDance.mp3");
+					robotwait(10.0);
+					messageToKinect = "";
+					for(int r=0; r<tokens.size(); r++)
+					{
+						if(tokens[r] == "leftArmIn")
 						{
-							LinuxActionScript::PlayMP3("repeatedStepAlert.mp3");
-							robotwait(3.0);
-							messageToKinect = "Ready.";
+							if(!(previousState == "leftArmIn" || previousState == "leftArmShake")) //if the previous state is neither one of these
+							{
+								//check legs
+								if(previousState == "leftLegIn" || previousState == "leftLegShake")
+								{
+									leftlegbacktodefault();
+									robotwait(1.0);
+								}
+								else if(previousState == "rightLegIn" || previousState == "rightLegShake")
+								{
+									rightlegbacktodefault();
+									robotwait(1.0);
+								}
+								else
+								{
+									defaultposition();
+									robotwait(1.0);
+								}
+							}
+							
+							//LinuxActionScript::PlayMP3("lefthandin.mp3");
+
+							leftarmin();
+							robotwait(1.0);
+
+							previousState = "leftArmIn";
+							messageToKinect += "leftArmIn ";
 						}
-						else if(limb == "forceDefault")
+						else if(tokens[r] == "leftArmShake")
 						{
+							if(!(previousState == "leftArmIn" || previousState == "leftArmShake"))
+							{
+								//check legs
+								if(previousState == "leftLegIn" || previousState == "leftLegShake")
+								{
+									leftlegbacktodefault();
+									robotwait(1.0);
+								}
+								else if(previousState == "rightLegIn" || previousState == "rightLegShake")
+								{
+									rightlegbacktodefault();
+									robotwait(1.0);
+								}
+								else
+								{
+									defaultposition();
+									robotwait(1.0);
+									leftarmin();
+									robotwait(1.0);
+								}
+							}
+							
+							//LinuxActionScript::PlayMP3("lefthandshake.mp3");
+
+							leftarmtiltout();
+							robotwait(1.0);
+							leftarmtiltin();
+							robotwait(1.0);
+							leftarmtiltout();
+							robotwait(1.0);
+							leftarmtiltin();
+							robotwait(1.0);
+							leftarmtiltout();
+							robotwait(1.0);
+
+							previousState = "leftArmShake";
+							messageToKinect += "leftArmShake ";
+						}
+						else if(tokens[r] == "rightArmIn")
+						{
+							if(!(previousState == "rightArmIn" || previousState == "rightArmShake"))
+							{
+								//check legs
+								if(previousState == "leftLegIn" || previousState == "leftLegShake")
+								{
+									leftlegbacktodefault();
+									robotwait(1.0);
+								}
+								else if(previousState == "rightLegIn" || previousState == "rightLegShake")
+								{
+									rightlegbacktodefault();
+									robotwait(1.0);
+								}
+								else
+								{
+									defaultposition();
+									robotwait(1.0);
+								}
+							}
+							
+							//LinuxActionScript::PlayMP3("righthandin.mp3");
+
+							rightarmin();
+							robotwait(1.0);
+
+							previousState = "rightArmIn";
+							messageToKinect += "rightArmIn ";
+						}
+						else if(tokens[r] == "rightArmShake")
+						{
+							if(!(previousState == "rightArmIn" || previousState == "rightArmShake"))
+							{
+								//check legs
+								if(previousState == "leftLegIn" || previousState == "leftLegShake")
+								{
+									leftlegbacktodefault();
+									robotwait(1.0);
+								}
+								else if(previousState == "rightLegIn" || previousState == "rightLegShake")
+								{
+									rightlegbacktodefault();
+									robotwait(1.0);
+								}
+								else
+								{
+									defaultposition();
+									robotwait(1.0);
+									rightarmin();
+									robotwait(1.0);
+								}
+							}
+							
+							//LinuxActionScript::PlayMP3("righthandshake.mp3");
+
+							rightarmtiltout();
+							robotwait(1.0);
+							rightarmtiltin();
+							robotwait(1.0);
+							rightarmtiltout();
+							robotwait(1.0);
+							rightarmtiltin();
+							robotwait(1.0);
+							rightarmtiltout();
+							robotwait(1.0);
+
+							previousState = "rightArmShake";
+							messageToKinect += "rightArmShake ";
+						}
+						else if(tokens[r] == "leftLegIn")
+						{
+							if(!(previousState == "leftLegIn" || previousState == "leftLegShake"))
+							{
+								//check legs
+								if(previousState == "rightLegIn" || previousState == "rightLegShake")
+								{
+									rightlegbacktodefault();
+									robotwait(1.0);
+								}
+								else
+								{
+									defaultposition();
+									robotwait(1.0);
+								}
+							}
+
+							//LinuxActionScript::PlayMP3("leftfootin.mp3");
+
+							leftleglifted();
+							robotwait(0.5);
+							leftlegin();
+							robotwait(1.0);
+
+							previousState = "leftLegIn";
+							messageToKinect += "leftLegIn ";
+						}
+						else if(tokens[r] == "leftLegshake")
+						{
+							if(!(previousState == "leftLegIn" || previousState == "leftLegShake"))
+							{
+								if(previousState == "rightLegIn" || previousState == "rightLegShake") 
+								{
+									rightlegbacktodefault();
+									robotwait(1.0);
+									leftleglifted();
+									robotwait(0.5);
+									leftlegin();
+									robotwait(1.0);
+								}
+								else
+								{
+									defaultposition();
+									robotwait(1.0);
+									leftleglifted();
+									robotwait(0.5);
+									leftlegin();
+									robotwait(1.0);
+								}
+							}
+
+							//LinuxActionScript::PlayMP3("leftfootshake.mp3");
+
+							leftlegtiltout();
+							robotwait(1.0);
+							leftlegtiltin();
+							robotwait(1.0);
+							leftlegtiltout();
+							robotwait(1.0);
+							leftlegtiltin();
+							robotwait(1.0);
+							leftlegin();
+							robotwait(1.0);
+							leftleglifted();
+
+							previousState = "leftLegShake";
+							messageToKinect += "leftLegShake ";
+						}
+						else if(tokens[r] == "rightLegIn")
+						{
+							if(!(previousState == "rightLegIn" || previousState == "rightLegShake"))
+							{
+								//check legs
+								if(previousState == "leftLegIn" || previousState == "leftLegShake")
+								{
+									leftlegbacktodefault();
+									robotwait(1.0);
+								}
+								else
+								{
+									defaultposition();
+									robotwait(1.0);
+								}
+							}
+
+							//LinuxActionScript::PlayMP3("rightfootin.mp3");
+
+							rightleglifted();
+							robotwait(0.5);
+							rightlegin();
+							robotwait(1.0);
+
+							previousState = "rightLegIn";
+							messageToKinect += "rightLegIn ";
+						}
+						else if(tokens[r] == "rightLegShake")
+						{
+							if(!(previousState == "rightLegIn" || previousState == "rightLegShake"))
+							{
+								//check legs
+								if(previousState == "leftLegIn" || previousState == "leftLegShake")
+								{
+									leftlegbacktodefault();
+									robotwait(1.0);
+									leftleglifted();
+									robotwait(0.5);
+									leftlegin();
+									robotwait(1.0);
+								}
+								else
+								{
+									defaultposition();
+									robotwait(1.0);
+									rightleglifted();
+									robotwait(0.5);
+									rightlegin();
+									robotwait(1.0);
+								}
+							}
+
+							//LinuxActionScript::PlayMP3("rightfootshake.mp3");
+
+							rightlegtiltout();
+							robotwait(1.0);
+							rightlegtiltin();
+							robotwait(1.0);
+							rightlegtiltout();
+							robotwait(1.0);
+							rightlegtiltin();
+							robotwait(1.0);
+							rightlegin();
+							robotwait(1.0);
+							rightleglifted();
+
+							previousState = "rightLegShake";
+							messageToKinect += "rightLegShake ";
+						}
+						else if(tokens[r] == "hokeyPokey")
+						{
+							if(previousState != "hokeyPokey")
+							{
+								if(previousState == "leftLegIn" || previousState == "leftLegShake")
+								{
+									//lower the left leg 
+									//this is different from telling the Darwin to go to default since you have to carefully adjust the knee, hip, and ankle motors
+									leftlegbacktodefault();
+									robotwait(1.0);
+								}
+								else if(previousState == "rightLegIn" || previousState == "rightLegShake")
+								{
+									//lower the right leg
+									rightlegbacktodefault();
+									robotwait(1.0);
+								}
+								/*else
+								{
+									defaultposition(); //the arms can go back to the default position no problem
+									robotwait(1.0);
+								}*/
+							}
+
+							//LinuxActionScript::PlayMP3("hokeypokey.mp3");
+							
+							//do the hokey pokey
+							doHokeyPokey();
+							robotwait(1.0);
+							previousState == "hokeyPokey";
+							messageToKinect += "hokeyPokey ";
+						}
+						else //going to assume it's default
+						{
+							if(previousState != "default")
+							{
+								if(previousState == "leftLegIn" || previousState == "leftLegShake")
+								{
+									leftlegbacktodefault();
+									robotwait(0.5);
+								}
+								else if(previousState == "rightLegIn" || previousState == "rightLegShake")
+								{
+									rightlegbacktodefault();
+									robotwait(0.5);
+								}
+							}
+
 							defaultposition();
 							robotwait(1.0);
+							previousState = "default";
+							messageToKinect += "default ";
 						}
-						else if(limb == "end")
-						{
-							LinuxActionScript::PlayMP3("interaction_end.mp3");
-							robotwait(9.0);
-						}
-
-						break; //exit out of for loop
-					}
-					if(movementNumber > 0) //do at least limb in
-					{
-						LinuxActionScript::PlayMP3("one.mp3");
-						limbIn(limb);
-					}
-					if(movementNumber > 1) //do at least limb out
-					{
-						LinuxActionScript::PlayMP3("two.mp3");
-						limbOut(limb);
-					}
-					if(movementNumber > 2) //do at least limb in (2nd)
-					{
-						LinuxActionScript::PlayMP3("three.mp3");
-						limbIn(limb);
-					}
-					if(movementNumber > 3) //do at least limb shake
-					{
-						LinuxActionScript::PlayMP3("four.mp3");
-						limbShake(limb);
-					}
-					if(movementNumber > 4) //do at least hokey pokey
-					{
-						mistakeFlag = false; //the only case when mistakeFlag is not true is when the robot does all limb movements correctly
-						LinuxActionScript::PlayMP3("five.mp3");
-						doHokeyPokey();
-					}
-
-					if(mistakeFlag)
-					{
-						//call whatever method that handles when a robot makes a mistake
-						handleMistake(limb);
-					}
-
-					//now the robot asks if it did the action correctly
-					LinuxActionScript::PlayMP3("query.mp3");
-					robotwait(4.0); //<--- may need to change this whenever I actually record the voice
+					} //end for loop
 				}
 				
+				//now the robot needs to ask if it did the right thing
+				LinuxActionScript::PlayMP3("correctnessQuery.mp3");
+				robotwait(3.0);
+				messageToKinect += ". Robot played correctnessQuery.mp3 to ask if it performed the dance correctly.";
+
 				//respond back to client saying it is ready for next message
 				send(clientSock, messageToKinect.c_str(), messageToKinect.length(), 0);
 			}

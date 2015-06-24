@@ -165,7 +165,7 @@ namespace SkeletonDataServer
         int limbCounter = 0;
         int leftArmCounter = 0, rightArmCounter = 0, leftLegCounter = 0, rightLegCounter = 0;
 
-        bool darwinWasCorrect = false, inInCorrectnessConfirmation = false, inLimbQuery = false;
+        bool darwinWasCorrect = false, inIncorrectnessConfirmation = false, inLimbQuery = false, hokeypokeyDone = false, waitingToConfirm = false;
 
         string messageToDarwin = "", moveSequence = "";
 
@@ -708,6 +708,7 @@ namespace SkeletonDataServer
                                             //the message sent to the Darwin will be the move sequence
                                             //messageToDarwin = moveSequence;
                                             messageToDarwin = createMovementSequence();
+                                            waitingToConfirm = true;
                                         }
                                         else if(dataToSend.Equals("repeated"))
                                         {
@@ -718,14 +719,20 @@ namespace SkeletonDataServer
                                         {
                                             //tell the Darwin that it either did the correct or incorrect thing after it attempts the dance
                                             messageToDarwin = "incorrect";
+                                            inIncorrectLimbQuery = true;
                                         }
                                         else if(dataToSend.Equals("rightconfirmation"))
                                         {
                                             messageToDarwin = "correct"; //darwin will ask what limb the person will teach next
+                                            inNextLimbQuery = true;
                                         }
                                         else if(dataToSend.Equals("newLimb"))
                                         {
                                             messageToDarwin = "newLimb"; //darwin will tell the person to begin
+                                        }
+                                        else if(dataToSend.Equals("repeatLimb"))
+                                        {
+                                            messageToDarwin = "repeatLimb";
                                         }
                                         else if(dataToSend.Equals("getStarted"))
                                         {
@@ -873,7 +880,12 @@ namespace SkeletonDataServer
 
                                 //we have all of the joint data now
                                 //so it's time to determine what action the participant performed
-                                if ((changingState == true) && (stateCount > STAGE0PREINTERACTION))
+                                if(hokeypokeyDone) //if the previous motion was hokeyPokey, then we are sending the commands to the robot
+                                {
+                                    dataToSend = "sequence";
+                                    hokeypokeyDone = false;
+                                }
+                                else if((changingState == true) && (stateCount > STAGE0PREINTERACTION))
                                 {
                                 	//by changing state, I mean starting another iteration of the hokey pokey
                                 	stateCount++;
@@ -990,7 +1002,7 @@ namespace SkeletonDataServer
 	                                		file.WriteLine("***Participant initiated interaction. Time: " + getTimeStamp(DateTime.Now));
 	                                		file.WriteLine("\tCurrent dance state = " + theHokeyPokeyDance.CurrentState);
 
-	                                    	stateCount = STAGE1MANYMISTAKES;
+	                                    	//stateCount = STAGE1MANYMISTAKES;
 
 	                                    	dataToSend = "getStarted 0 alright";
 	                                    }
@@ -1009,7 +1021,7 @@ namespace SkeletonDataServer
 	                                	file.WriteLine("***Participant initiated interaction. Time: " + getTimeStamp(DateTime.Now));
 	                                	file.WriteLine("\tCurrent dance state = " + theHokeyPokeyDance.CurrentState);
 
-	                                    stateCount = STAGE1MANYMISTAKES;
+	                                    /*stateCount = STAGE1MANYMISTAKES;
 	                                	//stage = "one";
 
 	                                	//make sure the allMoves array is clear
@@ -1049,14 +1061,14 @@ namespace SkeletonDataServer
 	                                    }
 	                                    file.WriteLine("***END MOVES ARRAY***");
 
-	                                    //dataToSend = "getStarted 0 go";
+	                                    //dataToSend = "getStarted 0 go";*/
                                         dataToSend = "getStarted";
 	                                }
                                     readyToWrite = true;
                                 }
-                                else if (bothHandsIn() && (started || tutorialStarted))
+                                else if(bothHandsIn() && (started || tutorialStarted))
                                 {
-                                	//this will be the signal I use to allow participants to terminate the tutorial program at any time
+                                	/*//this will be the signal I use to allow participants to terminate the tutorial program at any time
                                 	if(inTutorial)
                                 	{
                                 		if(previousPosition.Equals("bothHandsIn"))
@@ -1094,10 +1106,21 @@ namespace SkeletonDataServer
 	                                	file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
 
 	                                	dataToSend = "nothing here alright";
-                                	}
+                                	}*/
+                                    if(waitingToConfirm)
+                                    {
+                                        inIncorrectLimbQuery = true;
+                                        waitingToConfirm = false;
+                                        dataToSend = "wrongconfirmation";
+                                    }
+                                    else
+                                    {
+                                        dataToSend = "nothing here alright";
+                                    }
+
                                 	readyToWrite = true;
                                 }
-                                else if (doingHokeyPokey() && (started || tutorialStarted))
+                                else if(doingHokeyPokey() && (started || tutorialStarted))
                                 {
                                 	Console.WriteLine("Participant did the hokey pokey");
                                 	//theHokeyPokeyDance.MoveNext(DanceMove.HP);
@@ -1106,7 +1129,13 @@ namespace SkeletonDataServer
                                 	file.WriteLine("Participant did the hokey pokey. Time: " + getTimeStamp(DateTime.Now));
                                 	//file.WriteLine("\tCurrent state = " + theHokeyPokeyDance.CurrentState);
                                 	
-                                	if(inTutorial) //in tutorial
+                                    if(waitingToConfirm)
+                                    {
+                                        inNextLimbQuery = true;
+                                        waitingToConfirm = false;
+                                        dataToSend = "rightconfirmation";
+                                    }
+                                	else if(inTutorial) //in tutorial
                                 	{
                                 		if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.LEFT_HAND_SHAKE_5 || (int)theHokeyPokeyDance.CurrentState == (int)DanceState.RIGHT_HAND_SHAKE_10 || (int)theHokeyPokeyDance.CurrentState == (int)DanceState.LEFT_LEG_SHAKE_15 || (int)theHokeyPokeyDance.CurrentState == (int)DanceState.RIGHT_LEG_SHAKE_20)
                                 		{
@@ -1174,15 +1203,18 @@ namespace SkeletonDataServer
                                             //reset the counter since this is the last movement
                                             rightLegCounter = 0;
                                         }
+
+                                        //set hokeypokeyDone flag
+                                        hokeypokeyDone = true;
                                         dataToSend = "sequence";
                                     }
 
                                 	readyToWrite = true;                          	
                                 }
-                                else if (leftLegIn() && (started || tutorialStarted))
+                                else if(leftLegIn() && (started || tutorialStarted) && !waitingToConfirm)
                                 {
                                     //new if statement
-                                    if(inInCorrectnessConfirmation) //person putting left leg in to tell the robot it got the limb wrong during the dance
+                                    if(inIncorrectLimbQuery) //person putting left leg in to tell the robot it got the limb wrong during the dance
                                     {
                                         activeLimb = "leftLeg";
                                         //clear the movement vector for that limb
@@ -1191,16 +1223,18 @@ namespace SkeletonDataServer
                                             leftLegMovements[p] = "null";
                                         }
 
-                                        inInCorrectnessConfirmation = false;
+                                        inIncorrectLimbQuery = false;
+                                        dataToSend = "repeatLimb";
                                     }
-                                    else if(inLimbQuery) //person putting their left leg in to tell the robot that it will now be learning this limb
+                                    else if(inNextLimbQuery) //person putting their left leg in to tell the robot that it will now be learning this limb
                                     {
                                         activeLimb = "leftLeg";
 
                                         limbOrder[limbCounter] = "leftLeg";
                                         limbCounter++;
 
-                                        inLimbQuery = false;
+                                        inNextLimbQuery = false;
+                                        dataToSend = "nextLimb";
                                     }
                                 	else if(previousPosition.Equals("leftLegIn") || previousPosition.Equals("leftLegShake"))
                                 	{
@@ -1243,27 +1277,28 @@ namespace SkeletonDataServer
 
                                                     dataToSend = "incorrect " + theHokeyPokeyDance.CurrentState + " yes";
                                                 }
-                                			}	
-                                            //TODO: add code for when it's not in tutorial here for left leg shake
+                                			}
+                                            else //TODO: add code for when it's not in tutorial here for left leg shake
+                                            {	
+                                                //first check to make sure the active limb is left leg
+                                                if(!activeLimb.Equals("leftLeg"))
+                                                {
+                                                    dataToSend = "humanError";
+                                                }
+                                                else if(previousPosition.Equals("leftLegShake")) //check to see if its a repeated movement
+                                                {
+                                                    //then send a repeated movement notification to the robot
+                                                    dataToSend = "repeated";
+                                                }
+                                                else //if the participant is using the correct limb and it's not a repeated movement, everything is good
+                                                {
+                                                    //add this demonstration to the list
+                                                    leftLegMovements[leftLegCounter] = "leftLegShake";
+                                                    leftLegCounter++;
 
-                                            //first check to make sure the active limb is left leg
-                                            if(!activeLimb.Equals("leftLeg"))
-                                            {
-                                                dataToSend = "humanError";
+                                                    dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                    		    }
                                             }
-                                            else if(previousPosition.Equals("leftLegShake")) //check to see if its a repeated movement
-                                            {
-                                               //then send a repeated movement notification to the robot
-                                               dataToSend = "repeated";
-                                            }
-                                            else //if the participant is using the correct limb and it's not a repeated movement, everything is good
-                                            {
-                                                //add this demonstration to the list
-                                                leftLegMovements[leftLegCounter] = "leftLegShake";
-                                                leftLegCounter++;
-
-                                                dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
-                                		    }
                                         }
                                 	}
                                 	
@@ -1305,36 +1340,37 @@ namespace SkeletonDataServer
                                                 dataToSend = "incorrect " + theHokeyPokeyDance.CurrentState + " yes";
                                             }
                                 		}
-                                        //TODO: Add code for when it's not in the tutorial for left leg in here
+                                        else //TODO: Add code for when it's not in the tutorial for left leg in here
+                                        {
+                                            //first check to make sure the active limb is left leg
+                                            if(!activeLimb.Equals("leftLeg"))
+                                            {
+                                                dataToSend = "humanError";
+                                            }
+                                            else if(previousPosition.Equals("leftLegIn")) //check to see if its a repeated movement
+                                            {
+                                                //then send a repeated movement notification to the robot
+                                                dataToSend = "repeated";
+                                            }
+                                            else //if the participant is using the correct limb and it's not a repeated movement, everything is good
+                                            {
+                                                //add this demonstration to the list
+                                                leftLegMovements[leftLegCounter] = "leftLegIn";
+                                                leftLegCounter++;
 
-                                        //first check to make sure the active limb is left leg
-                                        if(!activeLimb.Equals("leftLeg"))
-                                        {
-                                            dataToSend = "humanError";
-                                        }
-                                        else if(previousPosition.Equals("leftLegIn")) //check to see if its a repeated movement
-                                        {
-                                            //then send a repeated movement notification to the robot
-                                            dataToSend = "repeated";
-                                        }
-                                        else //if the participant is using the correct limb and it's not a repeated movement, everything is good
-                                        {
-                                            //add this demonstration to the list
-                                            leftLegMovements[leftLegCounter] = "leftLegIn";
-                                            leftLegCounter++;
-
-                                            dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                                dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                            }
                                         }
                                 	}
 
                                 	skipLogic = false;
                                 	readyToWrite = true;
                                 }
-                                else if(rightLegIn() && (started || tutorialStarted))
+                                else if(rightLegIn() && (started || tutorialStarted) && !waitingToConfirm)
                                 {
                                 	//TODO: Copy and modify from the above logic for left leg
                                     //new if statement
-                                    if(inInCorrectnessConfirmation) //person putting left leg in to tell the robot it got the limb wrong during the dance
+                                    if(inIncorrectLimbQuery) //person putting left leg in to tell the robot it got the limb wrong during the dance
                                     {
                                         activeLimb = "rightLeg";
                                         //clear the movement vector for that limb
@@ -1343,16 +1379,18 @@ namespace SkeletonDataServer
                                             rightLegMovements[p] = "null";
                                         }
 
-                                        inInCorrectnessConfirmation = false;
+                                        inIncorrectLimbQuery = false;
+                                        dataToSend = "repeatLimb";
                                     }
-                                    else if(inLimbQuery) //person putting their left leg in to tell the robot that it will now be learning this limb
+                                    else if(inNextLimbQuery) //person putting their left leg in to tell the robot that it will now be learning this limb
                                     {
                                         activeLimb = "rightLeg";
 
                                         limbOrder[limbCounter] = "rightLeg";
                                         limbCounter++;
 
-                                        inLimbQuery = false;
+                                        inNextLimbQuery = false;
+                                        dataToSend = "nextLimb";
                                     }
                                     else if(previousPosition.Equals("rightLegIn") || previousPosition.Equals("rightLegShake"))
                                     {
@@ -1395,26 +1433,27 @@ namespace SkeletonDataServer
 
                                                     dataToSend = "incorrect " + theHokeyPokeyDance.CurrentState + " yes";
                                                 }
-                                            }   
-                                            //TODO: add code for when it's not in tutorial here for left leg shake
+                                            } 
+                                            else //TODO: add code for when it's not in tutorial here for left leg shake
+                                            {  
+                                                //first check to make sure the active limb is left leg
+                                                if(!activeLimb.Equals("rightLeg"))
+                                                {
+                                                    dataToSend = "humanError";
+                                                }
+                                                else if(previousPosition.Equals("rightLegShake")) //check to see if its a repeated movement
+                                                {
+                                                   //then send a repeated movement notification to the robot
+                                                   dataToSend = "repeated";
+                                                }
+                                                else //if the participant is using the correct limb and it's not a repeated movement, everything is good
+                                                {
+                                                    //add this demonstration to the list
+                                                    rightLegMovements[rightLegCounter] = "rightLegShake";
+                                                    rightLegCounter++;
 
-                                            //first check to make sure the active limb is left leg
-                                            if(!activeLimb.Equals("rightLeg"))
-                                            {
-                                                dataToSend = "humanError";
-                                            }
-                                            else if(previousPosition.Equals("rightLegShake")) //check to see if its a repeated movement
-                                            {
-                                               //then send a repeated movement notification to the robot
-                                               dataToSend = "repeated";
-                                            }
-                                            else //if the participant is using the correct limb and it's not a repeated movement, everything is good
-                                            {
-                                                //add this demonstration to the list
-                                                rightLegMovements[rightLegCounter] = "rightLegShake";
-                                                rightLegCounter++;
-
-                                                dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                                    dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                                }
                                             }
                                         }
                                     }
@@ -1457,36 +1496,37 @@ namespace SkeletonDataServer
                                                 dataToSend = "incorrect " + theHokeyPokeyDance.CurrentState + " yes";
                                             }
                                         }
-                                        //TODO: Add code for when it's not in the tutorial for left leg in here
+                                        else //TODO: Add code for when it's not in the tutorial for left leg in here
+                                        {
+                                            //first check to make sure the active limb is left leg
+                                            if(!activeLimb.Equals("rightLeg"))
+                                            {
+                                                dataToSend = "humanError";
+                                            }
+                                            else if(previousPosition.Equals("rightLegIn")) //check to see if its a repeated movement
+                                            {
+                                                //then send a repeated movement notification to the robot
+                                                dataToSend = "repeated";
+                                            }
+                                            else //if the participant is using the correct limb and it's not a repeated movement, everything is good
+                                            {
+                                                //add this demonstration to the list
+                                                rightLegMovements[rightLegCounter] = "rightLegIn";
+                                                rightLegCounter++;
 
-                                        //first check to make sure the active limb is left leg
-                                        if(!activeLimb.Equals("rightLeg"))
-                                        {
-                                            dataToSend = "humanError";
-                                        }
-                                        else if(previousPosition.Equals("rightLegIn")) //check to see if its a repeated movement
-                                        {
-                                            //then send a repeated movement notification to the robot
-                                            dataToSend = "repeated";
-                                        }
-                                        else //if the participant is using the correct limb and it's not a repeated movement, everything is good
-                                        {
-                                            //add this demonstration to the list
-                                            rightLegMovements[rightLegCounter] = "rightLegIn";
-                                            rightLegCounter++;
-
-                                            dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                                dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                            }
                                         }
                                     }
 
                                     skipLogic = false;
                                     readyToWrite = true;
                                 }
-                                else if(leftArmIn() && (started || tutorialStarted))
+                                else if(leftArmIn() && (started || tutorialStarted) && !waitingToConfirm)
                                 {
                                     //TODO: Copy and modify from the above logic for left leg
                                     //new if statement
-                                    if(inInCorrectnessConfirmation) //person putting left leg in to tell the robot it got the limb wrong during the dance
+                                    if(inIncorrectLimbQuery) //person putting left leg in to tell the robot it got the limb wrong during the dance
                                     {
                                         activeLimb = "leftArm";
                                         //clear the movement vector for that limb
@@ -1495,16 +1535,18 @@ namespace SkeletonDataServer
                                             leftArmMovements[p] = "null";
                                         }
 
-                                        inInCorrectnessConfirmation = false;
+                                        inIncorrectLimbQuery = false;
+                                        dataToSend = "repeatLimb";
                                     }
-                                    else if(inLimbQuery) //person putting their left leg in to tell the robot that it will now be learning this limb
+                                    else if(inNextLimbQuery) //person putting their left leg in to tell the robot that it will now be learning this limb
                                     {
                                         activeLimb = "leftArm";
 
                                         limbOrder[limbCounter] = "leftArm";
                                         limbCounter++;
 
-                                        inLimbQuery = false;
+                                        inNextLimbQuery = false;
+                                        dataToSend = "nextLimb";
                                     }
                                     else if(previousPosition.Equals("leftArmIn") || previousPosition.Equals("leftArmShake"))
                                     {
@@ -1548,25 +1590,26 @@ namespace SkeletonDataServer
                                                     dataToSend = "incorrect " + theHokeyPokeyDance.CurrentState + " yes";
                                                 }
                                             }   
-                                            //TODO: add code for when it's not in tutorial here for left leg shake
+                                            else //TODO: add code for when it's not in tutorial here for left leg shake
+                                            {
+                                                //first check to make sure the active limb is left leg
+                                                if(!activeLimb.Equals("leftArm"))
+                                                {
+                                                    dataToSend = "humanError";
+                                                }
+                                                else if(previousPosition.Equals("leftArmShake")) //check to see if its a repeated movement
+                                                {
+                                                   //then send a repeated movement notification to the robot
+                                                   dataToSend = "repeated";
+                                                }
+                                                else //if the participant is using the correct limb and it's not a repeated movement, everything is good
+                                                {
+                                                    //add this demonstration to the list
+                                                    leftArmMovements[rightLegCounter] = "leftArmShake";
+                                                    leftArmCounter++;
 
-                                            //first check to make sure the active limb is left leg
-                                            if(!activeLimb.Equals("leftArm"))
-                                            {
-                                                dataToSend = "humanError";
-                                            }
-                                            else if(previousPosition.Equals("leftArmShake")) //check to see if its a repeated movement
-                                            {
-                                               //then send a repeated movement notification to the robot
-                                               dataToSend = "repeated";
-                                            }
-                                            else //if the participant is using the correct limb and it's not a repeated movement, everything is good
-                                            {
-                                                //add this demonstration to the list
-                                                leftArmMovements[rightLegCounter] = "leftArmShake";
-                                                leftArmCounter++;
-
-                                                dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                                    dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                                }
                                             }
                                         }
                                     }
@@ -1609,36 +1652,37 @@ namespace SkeletonDataServer
                                                 dataToSend = "incorrect " + theHokeyPokeyDance.CurrentState + " yes";
                                             }
                                         }
-                                        //TODO: Add code for when it's not in the tutorial for left leg in here
+                                        else //TODO: Add code for when it's not in the tutorial for left leg in here
+                                        {
+                                            //first check to make sure the active limb is left leg
+                                            if(!activeLimb.Equals("leftArm"))
+                                            {
+                                                dataToSend = "humanError";
+                                            }
+                                            else if(previousPosition.Equals("leftArmIn")) //check to see if its a repeated movement
+                                            {
+                                                //then send a repeated movement notification to the robot
+                                                dataToSend = "repeated";
+                                            }
+                                            else //if the participant is using the correct limb and it's not a repeated movement, everything is good
+                                            {
+                                                //add this demonstration to the list
+                                                leftArmMovements[leftArmCounter] = "leftArmIn";
+                                                leftArmCounter++;
 
-                                        //first check to make sure the active limb is left leg
-                                        if(!activeLimb.Equals("leftArm"))
-                                        {
-                                            dataToSend = "humanError";
-                                        }
-                                        else if(previousPosition.Equals("leftArmIn")) //check to see if its a repeated movement
-                                        {
-                                            //then send a repeated movement notification to the robot
-                                            dataToSend = "repeated";
-                                        }
-                                        else //if the participant is using the correct limb and it's not a repeated movement, everything is good
-                                        {
-                                            //add this demonstration to the list
-                                            leftArmMovements[leftArmCounter] = "leftArmIn";
-                                            leftArmCounter++;
-
-                                            dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                                dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                            }
                                         }
                                     }
 
                                     skipLogic = false;
                                     readyToWrite = true;
                                 }
-                                else if(rightArmIn() && (started || tutorialStarted))
+                                else if(rightArmIn() && (started || tutorialStarted) && !waitingToConfirm)
                                 {
                                 	//TODO: Copy and modify from the above logic for left leg
                                     //new if statement
-                                    if(inInCorrectnessConfirmation) //person putting left leg in to tell the robot it got the limb wrong during the dance
+                                    if(inIncorrectLimbQuery) //person putting left leg in to tell the robot it got the limb wrong during the dance
                                     {
                                         activeLimb = "rightArm";
                                         //clear the movement vector for that limb
@@ -1647,16 +1691,18 @@ namespace SkeletonDataServer
                                             leftArmMovements[p] = "null";
                                         }
 
-                                        inInCorrectnessConfirmation = false;
+                                        inIncorrectLimbQuery = false;
+                                        dataToSend = "repeatLimb";
                                     }
-                                    else if(inLimbQuery) //person putting their left leg in to tell the robot that it will now be learning this limb
+                                    else if(inNextLimbQuery) //person putting their left leg in to tell the robot that it will now be learning this limb
                                     {
                                         activeLimb = "rightArm";
 
                                         limbOrder[limbCounter] = "rightArm";
                                         limbCounter++;
 
-                                        inLimbQuery = false;
+                                        inNextLimbQuery = false;
+                                        dataToSend = "nextLimb";
                                     }
                                     else if(previousPosition.Equals("rightArmIn") || previousPosition.Equals("rightArmShake"))
                                     {
@@ -1700,25 +1746,26 @@ namespace SkeletonDataServer
                                                     dataToSend = "incorrect " + theHokeyPokeyDance.CurrentState + " yes";
                                                 }
                                             }   
-                                            //TODO: add code for when it's not in tutorial here for left leg shake
+                                            else //TODO: add code for when it's not in tutorial here for left leg shake
+                                            {
+                                                //first check to make sure the active limb is left leg
+                                                if(!activeLimb.Equals("rightArm"))
+                                                {
+                                                    dataToSend = "humanError";
+                                                }
+                                                else if(previousPosition.Equals("rightArmShake")) //check to see if its a repeated movement
+                                                {
+                                                   //then send a repeated movement notification to the robot
+                                                   dataToSend = "repeated";
+                                                }
+                                                else //if the participant is using the correct limb and it's not a repeated movement, everything is good
+                                                {
+                                                    //add this demonstration to the list
+                                                    rightArmMovements[rightLegCounter] = "rightArmShake";
+                                                    rightArmCounter++;
 
-                                            //first check to make sure the active limb is left leg
-                                            if(!activeLimb.Equals("rightArm"))
-                                            {
-                                                dataToSend = "humanError";
-                                            }
-                                            else if(previousPosition.Equals("rightArmShake")) //check to see if its a repeated movement
-                                            {
-                                               //then send a repeated movement notification to the robot
-                                               dataToSend = "repeated";
-                                            }
-                                            else //if the participant is using the correct limb and it's not a repeated movement, everything is good
-                                            {
-                                                //add this demonstration to the list
-                                                rightArmMovements[rightLegCounter] = "rightArmShake";
-                                                rightArmCounter++;
-
-                                                dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                                    dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                                }
                                             }
                                         }
                                     }
@@ -1761,32 +1808,33 @@ namespace SkeletonDataServer
                                                 dataToSend = "incorrect " + theHokeyPokeyDance.CurrentState + " yes";
                                             }
                                         }
-                                        //TODO: Add code for when it's not in the tutorial for left leg in here
+                                        else //TODO: Add code for when it's not in the tutorial for left leg in here
+                                        {
+                                            //first check to make sure the active limb is left leg
+                                            if(!activeLimb.Equals("rightArm"))
+                                            {
+                                                dataToSend = "humanError";
+                                            }
+                                            else if(previousPosition.Equals("rightArmIn")) //check to see if its a repeated movement
+                                            {
+                                                //then send a repeated movement notification to the robot
+                                                dataToSend = "repeated";
+                                            }
+                                            else //if the participant is using the correct limb and it's not a repeated movement, everything is good
+                                            {
+                                                //add this demonstration to the list
+                                                rightArmMovements[leftArmCounter] = "rightArmIn";
+                                                rightArmCounter++;
 
-                                        //first check to make sure the active limb is left leg
-                                        if(!activeLimb.Equals("rightArm"))
-                                        {
-                                            dataToSend = "humanError";
-                                        }
-                                        else if(previousPosition.Equals("rightArmIn")) //check to see if its a repeated movement
-                                        {
-                                            //then send a repeated movement notification to the robot
-                                            dataToSend = "repeated";
-                                        }
-                                        else //if the participant is using the correct limb and it's not a repeated movement, everything is good
-                                        {
-                                            //add this demonstration to the list
-                                            rightArmMovements[leftArmCounter] = "rightArmIn";
-                                            rightArmCounter++;
-
-                                            dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                                dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                            }
                                         }
                                     }
 
                                     skipLogic = false;
                                     readyToWrite = true;
                                 }
-                                else if(inDefault() && (started || tutorialStarted))
+                                else if(inDefault() && (started || tutorialStarted) & !(waitingToConfirm || inIncorrectLimbQuery || inNextLimbQuery))
                                 {
                                     if(!previousPosition.Equals("default") && !previousPosition.Equals("started")) //doing this to avoid multiple "Ok I got it" from the robot when the participant isn't doing anything
                                     {
@@ -1858,19 +1906,20 @@ namespace SkeletonDataServer
                                 				dataToSend = "incorrect " + theHokeyPokeyDance.CurrentState + " yes";
                                             }
                                         }
-                                        //TODO: Add code for when it's not in tutorial for default position here
-
-                                        if(previousPosition.Equals("default")) //check to see if its a repeated movement
+                                        else //TODO: Add code for when it's not in tutorial for default position here
                                         {
-                                            //then send a repeated movement notification to the robot
-                                            dataToSend = "repeated";
-                                        }
-                                        else //if the participant is using the correct limb and it's not a repeated movement, everything is good
-                                        {
-                                            //add this demonstration to the list
-                                            moveSequence += " default";
+                                            if(previousPosition.Equals("default")) //check to see if its a repeated movement
+                                            {
+                                                //then send a repeated movement notification to the robot
+                                                dataToSend = "repeated";
+                                            }
+                                            else //if the participant is using the correct limb and it's not a repeated movement, everything is good
+                                            {
+                                                //add this demonstration to the list
+                                                moveSequence += " default";
 
-                                            dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                                dataToSend = "actionPerformed"; //I'll actually send this so that the robot can respond "okay" after each move
+                                            }
                                         }
                                     }
                                     else //participant going to default after the previous position was default, so ignore
