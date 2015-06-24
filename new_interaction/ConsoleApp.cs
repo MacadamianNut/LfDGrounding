@@ -22,7 +22,7 @@ namespace SkeletonDataServer
 		//change this variable for each subject
 		public static string subjectNum = "1";
 
-        public static string ipaddress = "10.11.132.203";
+        public static string ipaddress = "10.11.130.183";
 
         public bool inTutorial = true; //change this in case the program crashes and you don't want to start over from the very beginning
         public bool tutorialStarted = false;
@@ -40,7 +40,7 @@ namespace SkeletonDataServer
         }
 
         //output file for a specific subject
-        static string filename = @"C:\Users\rhclab\Desktop\Subject_" + subjectNum +  ".txt";
+        static string filename = @"C:\Users\ti\Desktop\Subject_" + subjectNum +  ".txt";
 
         StreamWriter file = new StreamWriter(filename, true);
 
@@ -165,7 +165,7 @@ namespace SkeletonDataServer
         int limbCounter = 0;
         int leftArmCounter = 0, rightArmCounter = 0, leftLegCounter = 0, rightLegCounter = 0;
 
-        bool darwinWasCorrect = false, inIncorrectnessConfirmation = false, inLimbQuery = false, hokeypokeyDone = false, waitingToConfirm = false;
+        bool darwinWasCorrect = false, inIncorrectnessConfirmation = false, inIncorrectLimbQuery = false, inNextLimbQuery = false, hokeypokeyDone = false, waitingToConfirm = false, limbDone = false;
 
         string messageToDarwin = "", moveSequence = "";
 
@@ -205,121 +205,121 @@ namespace SkeletonDataServer
         	switch(temp)
         	{
         		case("DEFAULT_STATE_22"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\lefthandin_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\lefthandin_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("LEFT_HAND_IN_2"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\lefthandout_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\lefthandout_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("LEFT_HAND_OUT_3"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\lefthandin_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\lefthandin_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("LEFT_HAND_IN_4"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\lefthandshake_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\lefthandshake_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("LEFT_HAND_SHAKE_5"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\hokeypokey_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\hokeypokey_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;	
         		case("HOKEY_POKEY_6"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\righthandin_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\righthandin_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("RIGHT_HAND_IN_7"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\righthandout_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\righthandout_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("RIGHT_HAND_OUT_8"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\righthandin_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\righthandin_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("RIGHT_HAND_IN_9"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\righthandshake_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\righthandshake_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("RIGHT_HAND_SHAKE_10"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\hokeypokey_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\hokeypokey_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("HOKEY_POKEY_11"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\leftfootin_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\leftfootin_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("LEFT_LEG_IN_12"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\leftfootout_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\leftfootout_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("LEFT_LEG_OUT_13"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\leftfootin_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\leftfootin_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("LEFT_LEG_IN_14"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\leftfootshake_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\leftfootshake_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("LEFT_LEG_SHAKE_15"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\hokeypokey_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\hokeypokey_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("HOKEY_POKEY_16"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\rightfootin_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\rightfootin_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("RIGHT_LEG_IN_17"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\rightfootout_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\rightfootout_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("RIGHT_LEG_OUT_18"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\rightfootin_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\rightfootin_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("RIGHT_LEG_IN_19"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\rightfootshake_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\rightfootshake_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
         			break;
         		case("RIGHT_LEG_SHAKE_20"):
-        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\hokeypokey_tutorial.wav"))
+        			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\hokeypokey_tutorial.wav"))
 					{
 						simpleSound.PlaySync();
 					}
@@ -628,11 +628,11 @@ namespace SkeletonDataServer
                                 	{
                                 		if(words[0].Equals("end"))
                                 		{
-                                			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\correct_tutorial.wav"))
+                                			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\correct_tutorial.wav"))
 											{
 												simpleSound.PlaySync();
 											}
-                                			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\end_tutorial.wav"))
+                                			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\newend_tutorial.wav"))
 											{
 												simpleSound.PlaySync();
 											}
@@ -642,18 +642,18 @@ namespace SkeletonDataServer
                                 		}
                                 		else if(words[0].Equals("bodyDetected"))
                                 		{
-                                			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\welcome_tutorial.wav"))
+                                			using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\welcome_tutorial.wav"))
 											{
 												simpleSound.PlaySync();
 											}
 										}
 										else if(words[0].Equals("getStarted"))
 										{
-											using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\interactionstart_tutorial.wav"))
+											using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\interactionstart_tutorial.wav"))
 											{
 												simpleSound.PlaySync();
 											}
-                                            using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\lefthandin_tutorial.wav"))
+                                            using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\lefthandin_tutorial.wav"))
                                             {
                                                 simpleSound.PlaySync();
                                             }
@@ -665,21 +665,21 @@ namespace SkeletonDataServer
                                                 correctClip = random.Next(0,3);
                                                 if(correctClip == 0)
                                                 {
-                                				    using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\yescorrect_tutorial.wav"))
+                                				    using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\yescorrect_tutorial.wav"))
 												    {
 													   simpleSound.PlaySync();
 												    }
                                                 }
                                                 else if(correctClip == 1)
                                                 {
-                                                    using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\thatiscorrect_tutorial.wav"))
+                                                    using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\thatiscorrect_tutorial.wav"))
                                                     {
                                                        simpleSound.PlaySync();
                                                     }
                                                 }
                                                 else
                                                 {
-                                                    using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\correctmove_tutorial.wav"))
+                                                    using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\correctmove_tutorial.wav"))
                                                     {
                                                        simpleSound.PlaySync();
                                                     }
@@ -687,7 +687,7 @@ namespace SkeletonDataServer
                                 			}
                                 			else
                                 			{
-                                				using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\rhclab\Downloads\tutorialaudio\incorrect_tutorial.wav"))
+                                				using (SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\ti\Downloads\tutorialaudio\incorrect_tutorial.wav"))
 												{
 													simpleSound.PlaySync();
 												}
@@ -1168,49 +1168,50 @@ namespace SkeletonDataServer
                                 			dataToSend = "incorrect " + theHokeyPokeyDance.CurrentState + " yes";
                                 		}	
                                    	}
-
-                                    //non tutorial code
-
-                                    //first check if it's a repeated movement
-                                    if(previousPosition.Equals("hokeyPokey"))
-                                    {
-                                        dataToSend = "repeated";
-                                    }
-                                    else
-                                    {
-                                        //moveSequence += " hokeypokey";
-                                        if(activeLimb == "leftArm")
+                                    else //non tutorial code
+                                    { 
+                                        //first check if it's a repeated movement
+                                        if (previousPosition.Equals("hokeyPokey"))
                                         {
-                                            leftArmMovements[leftArmCounter] = "hokeypokey";
-
-                                            //reset the counter since this is the last movement
-                                            leftArmCounter = 0;
+                                            //dataToSend = "repeated";
+                                            dataToSend = "nothing here alright"; //do nothing for repeated movements
                                         }
-                                        else if(activeLimb == "rightArm")
+                                        else
                                         {
-                                            rightArmMovements[leftArmCounter] = "hokeypokey";
+                                            //moveSequence += " hokeypokey";
+                                            if (activeLimb == "leftArm")
+                                            {
+                                                leftArmMovements[leftArmCounter] = "hokeypokey";
 
-                                            //reset the counter since this is the last movement
-                                            rightArmCounter = 0;
+                                                //reset the counter since this is the last movement
+                                                leftArmCounter = 0;
+                                            }
+                                            else if (activeLimb == "rightArm")
+                                            {
+                                                rightArmMovements[leftArmCounter] = "hokeypokey";
+
+                                                //reset the counter since this is the last movement
+                                                rightArmCounter = 0;
+                                            }
+                                            else if (activeLimb == "leftLeg")
+                                            {
+                                                leftLegMovements[leftArmCounter] = "hokeypokey";
+
+                                                //reset the counter since this is the last movement
+                                                leftLegCounter = 0;
+                                            }
+                                            else if (activeLimb == "rightLeg")
+                                            {
+                                                rightLegMovements[leftArmCounter] = "hokeypokey";
+
+                                                //reset the counter since this is the last movement
+                                                rightLegCounter = 0;
+                                            }
+
+                                            //set hokeypokeyDone flag
+                                            hokeypokeyDone = true;
+                                            dataToSend = "sequence";
                                         }
-                                        else if(activeLimb == "leftLeg")
-                                        {
-                                            leftLegMovements[leftArmCounter] = "hokeypokey";
-
-                                            //reset the counter since this is the last movement
-                                            leftLegCounter = 0;
-                                        }
-                                        else if(activeLimb == "rightLeg")
-                                        {
-                                            rightLegMovements[leftArmCounter] = "hokeypokey";
-
-                                            //reset the counter since this is the last movement
-                                            rightLegCounter = 0;
-                                        }
-
-                                        //set hokeypokeyDone flag
-                                        hokeypokeyDone = true;
-                                        dataToSend = "sequence";
                                     }
 
                                 	readyToWrite = true;                          	
@@ -1234,8 +1235,29 @@ namespace SkeletonDataServer
                                     {
                                         activeLimb = "leftLeg";
 
-                                        limbOrder[limbCounter] = "leftLeg";
-                                        limbCounter++;
+                                        //check to make sure this limb hasn't already been done yet
+                                        limbDone = false;
+                                        for(int q=0; q<4; q++)
+                                        {
+                                            if(limbOrder[q].Equals("leftLeg"))
+                                            {
+                                                limbDone = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if(!limbDone) //if the limb hasn't already been done, then add it to the limbOrder array
+                                        {
+                                            limbOrder[limbCounter] = "leftLeg";
+                                            limbCounter++;
+                                        }
+                                        else //if the limb has already been done, then clear existing movements
+                                        {
+                                            for(int p=0; p<100; p++)
+                                            {
+                                                leftLegMovements[p] = "null";
+                                            }
+                                        }
 
                                         inNextLimbQuery = false;
                                         dataToSend = "nextLimb";
@@ -1292,7 +1314,8 @@ namespace SkeletonDataServer
                                                 else if(previousPosition.Equals("leftLegShake")) //check to see if its a repeated movement
                                                 {
                                                     //then send a repeated movement notification to the robot
-                                                    dataToSend = "repeated";
+                                                    //dataToSend = "repeated";
+                                                    dataToSend = "nothing here alright";
                                                 }
                                                 else //if the participant is using the correct limb and it's not a repeated movement, everything is good
                                                 {
@@ -1354,7 +1377,8 @@ namespace SkeletonDataServer
                                             else if(previousPosition.Equals("leftLegIn")) //check to see if its a repeated movement
                                             {
                                                 //then send a repeated movement notification to the robot
-                                                dataToSend = "repeated";
+                                                //dataToSend = "repeated";
+                                                dataToSend = "nothing here alright";
                                             }
                                             else //if the participant is using the correct limb and it's not a repeated movement, everything is good
                                             {
@@ -1390,8 +1414,29 @@ namespace SkeletonDataServer
                                     {
                                         activeLimb = "rightLeg";
 
-                                        limbOrder[limbCounter] = "rightLeg";
-                                        limbCounter++;
+                                        //check to make sure this limb hasn't already been done yet
+                                        limbDone = false;
+                                        for(int q=0; q<4; q++)
+                                        {
+                                            if(limbOrder[q].Equals("rightLeg"))
+                                            {
+                                                limbDone = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if(!limbDone) //if the limb hasn't already been done, then add it to the limbOrder array
+                                        {
+                                            limbOrder[limbCounter] = "rightLeg";
+                                            limbCounter++;
+                                        }
+                                        else //if the limb has already been done, then clear existing movements
+                                        {
+                                            for(int p=0; p<100; p++)
+                                            {
+                                                rightLegMovements[p] = "null";
+                                            }
+                                        }
 
                                         inNextLimbQuery = false;
                                         dataToSend = "nextLimb";
@@ -1407,7 +1452,7 @@ namespace SkeletonDataServer
 
                                             if(inTutorial) //in tutorial
                                             {
-                                                if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.LEFT_LEG_IN_14) //CHANGE
+                                                if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.RIGHT_LEG_IN_19) 
                                                 {
                                                     Console.WriteLine("Participant correctly did right leg shake");
                                                     file.WriteLine("Participant correctly did right leg shake. Time: " + getTimeStamp(DateTime.Now));
@@ -1448,7 +1493,8 @@ namespace SkeletonDataServer
                                                 else if(previousPosition.Equals("rightLegShake")) //check to see if its a repeated movement
                                                 {
                                                    //then send a repeated movement notification to the robot
-                                                   dataToSend = "repeated";
+                                                   //dataToSend = "repeated";
+                                                   dataToSend = "nothing here alright";
                                                 }
                                                 else //if the participant is using the correct limb and it's not a repeated movement, everything is good
                                                 {
@@ -1469,7 +1515,7 @@ namespace SkeletonDataServer
                                         
                                         if(inTutorial) //in tutorial program
                                         {
-                                            if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.HOKEY_POKEY_11 || (int)theHokeyPokeyDance.CurrentState == (int)DanceState.LEFT_LEG_OUT_13) //CHANGE
+                                            if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.HOKEY_POKEY_16 || (int)theHokeyPokeyDance.CurrentState == (int)DanceState.RIGHT_LEG_OUT_18)
                                             {
                                                 Console.WriteLine("Participant correctly put their right leg in");
                                                 file.WriteLine("Participant correctly put their right leg in. Time: " + getTimeStamp(DateTime.Now));
@@ -1510,7 +1556,8 @@ namespace SkeletonDataServer
                                             else if(previousPosition.Equals("rightLegIn")) //check to see if its a repeated movement
                                             {
                                                 //then send a repeated movement notification to the robot
-                                                dataToSend = "repeated";
+                                                //dataToSend = "repeated";
+                                                dataToSend = "nothing here alright";
                                             }
                                             else //if the participant is using the correct limb and it's not a repeated movement, everything is good
                                             {
@@ -1546,8 +1593,29 @@ namespace SkeletonDataServer
                                     {
                                         activeLimb = "leftArm";
 
-                                        limbOrder[limbCounter] = "leftArm";
-                                        limbCounter++;
+                                        //check to make sure this limb hasn't already been done yet
+                                        limbDone = false;
+                                        for(int q=0; q<4; q++)
+                                        {
+                                            if(limbOrder[q].Equals("leftArm"))
+                                            {
+                                                limbDone = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if(!limbDone) //if the limb hasn't already been done, then add it to the limbOrder array
+                                        {
+                                            limbOrder[limbCounter] = "leftArm";
+                                            limbCounter++;
+                                        }
+                                        else //if the limb has already been done, then clear existing movements
+                                        {
+                                            for(int p=0; p<100; p++)
+                                            {
+                                                leftArmMovements[p] = "null";
+                                            }
+                                        }
 
                                         inNextLimbQuery = false;
                                         dataToSend = "nextLimb";
@@ -1563,7 +1631,7 @@ namespace SkeletonDataServer
 
                                             if(inTutorial) //in tutorial
                                             {
-                                                if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.LEFT_LEG_IN_14) //CHANGE
+                                                if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.LEFT_HAND_IN_4) //CHANGE
                                                 {
                                                     Console.WriteLine("Participant correctly did left arm shake");
                                                     file.WriteLine("Participant correctly did left arm shake. Time: " + getTimeStamp(DateTime.Now));
@@ -1604,7 +1672,8 @@ namespace SkeletonDataServer
                                                 else if(previousPosition.Equals("leftArmShake")) //check to see if its a repeated movement
                                                 {
                                                    //then send a repeated movement notification to the robot
-                                                   dataToSend = "repeated";
+                                                   //dataToSend = "repeated";
+                                                   dataToSend = "nothing here alright";
                                                 }
                                                 else //if the participant is using the correct limb and it's not a repeated movement, everything is good
                                                 {
@@ -1625,7 +1694,7 @@ namespace SkeletonDataServer
                                         
                                         if(inTutorial) //in tutorial program
                                         {
-                                            if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.HOKEY_POKEY_11 || (int)theHokeyPokeyDance.CurrentState == (int)DanceState.LEFT_LEG_OUT_13) //CHANGE
+                                            if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.DEFAULT_STATE_22 || (int)theHokeyPokeyDance.CurrentState == (int)DanceState.LEFT_HAND_OUT_3)
                                             {
                                                 Console.WriteLine("Participant correctly put their left arm in");
                                                 file.WriteLine("Participant correctly put their left arm in. Time: " + getTimeStamp(DateTime.Now));
@@ -1666,7 +1735,8 @@ namespace SkeletonDataServer
                                             else if(previousPosition.Equals("leftArmIn")) //check to see if its a repeated movement
                                             {
                                                 //then send a repeated movement notification to the robot
-                                                dataToSend = "repeated";
+                                                //dataToSend = "repeated";
+                                                dataToSend = "nothing here alright";
                                             }
                                             else //if the participant is using the correct limb and it's not a repeated movement, everything is good
                                             {
@@ -1692,7 +1762,7 @@ namespace SkeletonDataServer
                                         //clear the movement vector for that limb
                                         for(int p=0; p<100; p++)
                                         {
-                                            leftArmMovements[p] = "null";
+                                            rightArmMovements[p] = "null";
                                         }
 
                                         inIncorrectLimbQuery = false;
@@ -1702,8 +1772,29 @@ namespace SkeletonDataServer
                                     {
                                         activeLimb = "rightArm";
 
-                                        limbOrder[limbCounter] = "rightArm";
-                                        limbCounter++;
+                                        //check to make sure this limb hasn't already been done yet
+                                        limbDone = false;
+                                        for(int q=0; q<4; q++)
+                                        {
+                                            if(limbOrder[q].Equals("rightArm"))
+                                            {
+                                                limbDone = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if(!limbDone) //if the limb hasn't already been done, then add it to the limbOrder array
+                                        {
+                                            limbOrder[limbCounter] = "rightArm";
+                                            limbCounter++;
+                                        }
+                                        else //if the limb has already been done, then clear existing movements
+                                        {
+                                            for(int p=0; p<100; p++)
+                                            {
+                                                rightArmMovements[p] = "null";
+                                            }
+                                        }
 
                                         inNextLimbQuery = false;
                                         dataToSend = "nextLimb";
@@ -1719,7 +1810,7 @@ namespace SkeletonDataServer
 
                                             if(inTutorial) //in tutorial
                                             {
-                                                if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.LEFT_LEG_IN_14) //CHANGE
+                                                if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.RIGHT_HAND_IN_9) //CHANGE
                                                 {
                                                     Console.WriteLine("Participant correctly did right arm shake");
                                                     file.WriteLine("Participant correctly did right arm shake. Time: " + getTimeStamp(DateTime.Now));
@@ -1760,7 +1851,8 @@ namespace SkeletonDataServer
                                                 else if(previousPosition.Equals("rightArmShake")) //check to see if its a repeated movement
                                                 {
                                                    //then send a repeated movement notification to the robot
-                                                   dataToSend = "repeated";
+                                                  // dataToSend = "repeated";
+                                                  dataToSend = "nothing here alright";
                                                 }
                                                 else //if the participant is using the correct limb and it's not a repeated movement, everything is good
                                                 {
@@ -1781,7 +1873,7 @@ namespace SkeletonDataServer
                                         
                                         if(inTutorial) //in tutorial program
                                         {
-                                            if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.HOKEY_POKEY_11 || (int)theHokeyPokeyDance.CurrentState == (int)DanceState.LEFT_LEG_OUT_13) //CHANGE
+                                            if((int)theHokeyPokeyDance.CurrentState == (int)DanceState.HOKEY_POKEY_6 || (int)theHokeyPokeyDance.CurrentState == (int)DanceState.RIGHT_HAND_OUT_8)
                                             {
                                                 Console.WriteLine("Participant correctly put their right arm in");
                                                 file.WriteLine("Participant correctly put their right arm in. Time: " + getTimeStamp(DateTime.Now));
@@ -1822,7 +1914,8 @@ namespace SkeletonDataServer
                                             else if(previousPosition.Equals("rightArmIn")) //check to see if its a repeated movement
                                             {
                                                 //then send a repeated movement notification to the robot
-                                                dataToSend = "repeated";
+                                                //dataToSend = "repeated";
+                                                dataToSend = "nothing here alright";
                                             }
                                             else //if the participant is using the correct limb and it's not a repeated movement, everything is good
                                             {
@@ -1915,7 +2008,8 @@ namespace SkeletonDataServer
                                             if(previousPosition.Equals("default")) //check to see if its a repeated movement
                                             {
                                                 //then send a repeated movement notification to the robot
-                                                dataToSend = "repeated";
+                                                //dataToSend = "repeated";
+                                                dataToSend = "nothing here alright";
                                             }
                                             else //if the participant is using the correct limb and it's not a repeated movement, everything is good
                                             {

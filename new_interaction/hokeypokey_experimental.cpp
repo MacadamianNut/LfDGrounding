@@ -215,8 +215,9 @@ int main()
         
 		//std::string action, inputDelay, yesOrNoMovement;
 		std::string limb;
-		int movementNumber, status, index;
-		bool mistakeFlag;
+		//int movementNumber;
+		int status, index;
+		//bool mistakeFlag;
 		
 		do{
 			status = recv(clientSock, receivedStr, 1000, 0);
@@ -246,49 +247,54 @@ int main()
 
 				if(tokens.size() == 1) //then the message is either: repeated, wrongconfirmation, rightconfirmation, newlimb, getStarted, or actionPerformed
 				{
-					switch (tokens[0])
+					if(tokens[0] == "repeated")
 					{
-						case "repeated":
-							LinuxActionScript::PlayMP3("repeatedMovement.mp3");
-							robotwait(4.0);
-							messageToKinect = "Robot played repeatedMovement.mp3 to signify that this was a repeated movement.";
-							break;
-						case "humanError":
-							LinuxActionScript::PlayMP3("humanErrorDifferentLimb.mp3");
-							robotwait(4.0);
-							messageToKinect = "Robot played humanErrorDifferentLimb.mp3 to signify that the participant presented a limb other than the current limb.";
-							break;
-						case "wrongconfirmation":
-							LinuxActionScript::PlayMP3("incorrectLimbQuery.mp3");
-							robotwait(6.0);
-							messageToKinect = "Robot played incorrectLimbQuery.mp3 to signify that it made a mistake during the attempted dance and wants to see the demonstration again.";
-							break;
-						case "rightconfirmation":
-							LinuxActionScript::PlayMP3("nextlimbQuery.mp3");
-							robotwait(6.0);
-							messageToKinect = "Robot played nextlimbQuery.mp3 to signify that it did the dance correctly and wants to learn the next limb.";
-							break;
-						case "newlimb":
-							LinuxActionScript::PlayMP3("readyNewLimb.mp3");
-							robotwait(3.0);
-							messageToKinect = "Robot played readyNewLimb.mp3 to signify that it is ready to learn the next limb.";
-							break;
-						case "repeatLimb":
-							LinuxActionScript::PlayMP3("demonstrateAgain.mp3");
-							robotwait(4.0);
-							messageToKinect = "Robot played demonstrateAgain.mp3 to signify that it wants to see the demonstration of the limb again.";
-							break;
-						case "getStarted":
-							LinuxActionScript::PlayMP3("ready_to_begin.mp3");
-							robotwait(9.0);
-							messageToKinect = "Robot played ready_to_begin.mp3 to signify the start of the interaction.";
-							break;
-						case  "actionPerformed":
-							chosen = chooseContinueMsg();
-							LinuxActionScript::PlayMP3(chosen.c_str());
-							robotwait(2.0);
-							messageToKinect = "Robot played " + chosen + " to signify that it saw the participant's movement.";
-							break;
+						LinuxActionScript::PlayMP3("repeatedMovement.mp3");
+						robotwait(4.0);
+						messageToKinect = "Robot played repeatedMovement.mp3 to signify that this was a repeated movement.";
+					}
+					else if(tokens[0] == "humanError")
+					{
+						LinuxActionScript::PlayMP3("humanErrorDifferentLimb.mp3");
+						robotwait(4.0);
+						messageToKinect = "Robot played humanErrorDifferentLimb.mp3 to signify that the participant presented a limb other than the current limb.";
+					}
+					else if(tokens[0] == "wrongconfirmation")
+					{
+						LinuxActionScript::PlayMP3("incorrectLimbQuery.mp3");
+						robotwait(6.0);
+						messageToKinect = "Robot played incorrectLimbQuery.mp3 to signify that it made a mistake during the attempted dance and wants to see the demonstration again.";
+					}
+					else if(tokens[0] == "rightconfirmation")
+					{
+						LinuxActionScript::PlayMP3("nextlimbQuery.mp3");
+						robotwait(6.0);
+						messageToKinect = "Robot played nextlimbQuery.mp3 to signify that it did the dance correctly and wants to learn the next limb.";
+					}
+					else if(tokens]0] == "newlimb")
+					{
+						LinuxActionScript::PlayMP3("readyNewLimb.mp3");
+						robotwait(3.0);
+						messageToKinect = "Robot played readyNewLimb.mp3 to signify that it is ready to learn the next limb.";
+					}
+					else if(tokens[0] == "repeatLimb")
+					{
+						LinuxActionScript::PlayMP3("demonstrateAgain.mp3");
+						robotwait(4.0);
+						messageToKinect = "Robot played demonstrateAgain.mp3 to signify that it wants to see the demonstration of the limb again.";
+					}
+					else if(tokens[0] == "getStarted")
+					{
+						LinuxActionScript::PlayMP3("ready_to_begin.mp3");
+						robotwait(9.0);
+						messageToKinect = "Robot played ready_to_begin.mp3 to signify the start of the interaction.";
+					}
+					else if(tokens[0] == "actionPerformed")
+					{
+						chosen = chooseContinueMsg();
+						LinuxActionScript::PlayMP3(chosen.c_str());
+						robotwait(2.0);
+						messageToKinect = "Robot played " + chosen + " to signify that it saw the participant's movement.";
 					}
 				}
 				else //then it is a sequence of movements
